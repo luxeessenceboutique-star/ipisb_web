@@ -17,9 +17,13 @@ const serif = '"Cormorant Garamond", Georgia, serif';
 const sans  = '"Manrope", system-ui, sans-serif';
 const mono  = '"JetBrains Mono", ui-monospace, monospace';
 
-const TILE_VALUES  = ["2018", "1 200+", "94 %", "12"];
-const TILE_COLORS  = [L.primary, L.teal, L.green, L.amber];
-const TILE_BGS     = ["oklch(94% 0.025 165)", "oklch(95% 0.025 165)", "oklch(96% 0.02 155)", "oklch(97% 0.012 90)"];
+// Diplômés formés / Hôpitaux partenaires retirés à la demande du client —
+// seuls Année de fondation et Taux de réussite restent (abt.stat1/abt.stat3,
+// d'où TILE_KEYS explicite plutôt que le raccourci positionnel `stat${i+1}`).
+const TILE_VALUES  = ["2024", "94 %"];
+const TILE_COLORS  = [L.primary, L.green];
+const TILE_BGS     = ["oklch(94% 0.025 165)", "oklch(96% 0.02 155)"];
+const TILE_KEYS    = ["abt.stat1", "abt.stat3"];
 const TIMELINE_YEARS = ["2018", "2019", "2021", "2023", "2025"];
 
 export function About() {
@@ -34,7 +38,7 @@ export function About() {
   }, []);
 
   const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "120px 40px";
-  const tiles = TILE_VALUES.map((val, i) => ({ val, label: t(`abt.stat${i + 1}`), color: TILE_COLORS[i], bg: TILE_BGS[i] }));
+  const tiles = TILE_VALUES.map((val, i) => ({ val, label: t(TILE_KEYS[i]), color: TILE_COLORS[i], bg: TILE_BGS[i] }));
   const timeline = TIMELINE_YEARS.map((year, i) => ({ year, label: t(`abt.tl${i + 1}`) }));
   const listItems = [t("abt.li1"), t("abt.li2"), t("abt.li3"), t("abt.li4")];
 

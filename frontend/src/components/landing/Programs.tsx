@@ -70,7 +70,7 @@ export function Programs() {
           </div>
           <div style={{ textAlign: "right" as const }}>
             <p style={{ fontFamily: sans, fontSize: 15, lineHeight: 1.55, color: PAL.muted, maxWidth: 360, margin: "0 0 16px" }}>
-              Des formations accréditées, tournées vers la pratique et l'insertion professionnelle.
+              Des formations en cours d'accréditation, tournées vers la pratique et l'insertion professionnelle.
             </p>
             <Link to="/formations" style={{
               fontFamily: sans, fontSize: 13, fontWeight: 700, color: PAL.ink,

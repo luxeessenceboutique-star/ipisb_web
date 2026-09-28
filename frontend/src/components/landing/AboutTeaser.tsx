@@ -18,9 +18,13 @@ const serif = '"Cormorant Garamond", Georgia, serif';
 const sans  = '"Manrope", system-ui, sans-serif';
 const mono  = '"JetBrains Mono", ui-monospace, monospace';
 
-const TILE_VALUES = ["2018", "1 200+", "94 %", "12"];
-const TILE_COLORS = [L.primary, L.teal, L.green, L.amber];
-const TILE_BGS    = ["oklch(94% 0.025 165)", "oklch(95% 0.025 165)", "oklch(96% 0.02 155)", "oklch(97% 0.012 90)"];
+// Diplômés formés / Hôpitaux partenaires retirés à la demande du client —
+// seuls Année de fondation et Taux de réussite restent (about.stat1/
+// about.stat3, d'où TILE_KEYS explicite plutôt que le raccourci `stat${i+1}`).
+const TILE_VALUES = ["2024", "94 %"];
+const TILE_COLORS = [L.primary, L.green];
+const TILE_BGS    = ["oklch(94% 0.025 165)", "oklch(96% 0.02 155)"];
+const TILE_KEYS   = ["about.stat1", "about.stat3"];
 
 export function AboutTeaser() {
   const { t } = useI18n();
@@ -35,7 +39,7 @@ export function AboutTeaser() {
 
   const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "100px 40px";
   const tiles = TILE_VALUES.map((val, i) => ({
-    val, label: t(`about.stat${i + 1}`), color: TILE_COLORS[i], bg: TILE_BGS[i],
+    val, label: t(TILE_KEYS[i]), color: TILE_COLORS[i], bg: TILE_BGS[i],
   }));
 
   return (
