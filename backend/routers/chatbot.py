@@ -173,8 +173,8 @@ async def chat_stream(req: ChatRequest, background: BackgroundTasks):
         }
         yield f"data: {json.dumps(meta)}\n\n"
 
-        # Hardcoded reply (collect_docs) — stream directly without calling the LLM.
-        # Prevents the LLM from going off-script on predictable document request messages.
+        # Hardcoded reply (collect_info) — stream directly without calling the LLM.
+        # Prevents the LLM from going off-script on predictable info-collection messages.
         if hardcoded_reply:
             yield f"data: {json.dumps({'text': hardcoded_reply})}\n\n"
             yield "data: [DONE]\n\n"

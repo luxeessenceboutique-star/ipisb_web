@@ -29,6 +29,7 @@ const mono  = '"JetBrains Mono", ui-monospace, monospace';
 const VAL_COLORS = [PAL.primary, PAL.teal, PAL.green, PAL.amber];
 const VAL_ICONS: LucideIcon[]   = [Award, Heart, Lightbulb, Rocket];
 const INFRA_ICONS: LucideIcon[] = [Hospital, Dna, Laptop];
+const INFRA_IMAGES = ["/images/infra-simulation.jpg", "/images/infra-anatomy.jpg", "/images/infra-multimedia.jpg"];
 
 function AProposPage() {
   const { t } = useI18n();
@@ -44,11 +45,22 @@ function AProposPage() {
 
   const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "100px 40px";
   const values = [0,1,2,3].map((i) => ({ t: t(`ap.val.${i}.t`), d: t(`ap.val.${i}.d`), Icon: VAL_ICONS[i], color: VAL_COLORS[i] }));
-  const infras  = [0,1,2].map((i) => ({ t: t(`ap.infra.${i}.t`), d: t(`ap.infra.${i}.d`), Icon: INFRA_ICONS[i] }));
+  const infras  = [0,1,2].map((i) => ({ t: t(`ap.infra.${i}.t`), d: t(`ap.infra.${i}.d`), Icon: INFRA_ICONS[i], img: INFRA_IMAGES[i] }));
 
   return (
     <PageLayout>
       <About />
+
+      {/* History */}
+      <section style={{ background: PAL.paper, padding: pad, borderTop: `1px solid ${PAL.line}` }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
+          <div style={{ fontFamily: mono, fontSize: 11, color: PAL.primary, letterSpacing: ".14em", textTransform: "uppercase" as const, fontWeight: 600 }}>{t("ap.history.eyebrow")}</div>
+          <h2 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(32px, 4vw, 54px)", color: PAL.ink, margin: "12px 0 0", letterSpacing: "-.02em" }}>
+            {t("ap.history.h2a")} <em style={{ fontStyle: "italic", color: PAL.primary }}>{t("ap.history.h2b")}</em>
+          </h2>
+          <p style={{ fontFamily: sans, fontSize: isMobile ? 14 : 16, lineHeight: 1.75, color: PAL.text, margin: "24px auto 0", textAlign: isMobile ? "left" as const : "center" as const }}>{t("ap.history.body")}</p>
+        </div>
+      </section>
 
       {/* Values */}
       <section style={{ background: PAL.cream, padding: pad, borderTop: `1px solid ${PAL.line}` }}>
@@ -84,6 +96,9 @@ function AProposPage() {
       <section style={{ background: PAL.paper, padding: pad, borderTop: `1px solid ${PAL.line}` }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr" : "1fr 1.3fr", gap: isMobile ? 32 : 80, alignItems: "center" }}>
           <div>
+            <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 24, aspectRatio: "16 / 10" }}>
+              <img src="/images/team-faculty.jpg" alt={t("ap.team.h2a")} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+            </div>
             <div style={{ fontFamily: mono, fontSize: 11, color: PAL.primary, letterSpacing: ".14em", textTransform: "uppercase" as const, fontWeight: 600 }}>{t("ap.team.eyebrow")}</div>
             <h2 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(32px, 4vw, 54px)", color: PAL.ink, margin: "12px 0 0", letterSpacing: "-.02em", lineHeight: 1.05 }}>
               {t("ap.team.h2a")} <em style={{ fontStyle: "italic", color: PAL.primary }}>{t("ap.team.h2b")}</em>
@@ -115,10 +130,22 @@ function AProposPage() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "repeat(3, 1fr)", gap: 20 }}>
             {infras.map((infra, idx) => (
-              <div key={idx} style={{ background: PAL.paper, border: `1px solid ${PAL.line}`, borderRadius: 20, padding: isMobile ? 24 : 32 }}>
-                <infra.Icon size={28} strokeWidth={1.5} color={PAL.primary} style={{ display: "block", marginBottom: 14 }} />
-                <h3 style={{ fontFamily: serif, fontSize: isMobile ? 18 : 22, fontWeight: 500, color: PAL.ink, margin: "0 0 10px" }}>{infra.t}</h3>
-                <p style={{ fontFamily: sans, fontSize: 13, lineHeight: 1.6, color: PAL.muted, margin: 0 }}>{infra.d}</p>
+              <div key={idx} style={{ background: PAL.paper, border: `1px solid ${PAL.line}`, borderRadius: 20, overflow: "hidden" }}>
+                <div style={{ position: "relative", aspectRatio: "16 / 10", overflow: "hidden" }}>
+                  <img src={infra.img} alt={infra.t} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                  <div style={{
+                    position: "absolute", left: 14, bottom: -18,
+                    width: 40, height: 40, borderRadius: 12, background: PAL.paper,
+                    border: `1px solid ${PAL.line}`, boxShadow: "0 4px 14px oklch(0% 0 0 / .1)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <infra.Icon size={19} strokeWidth={1.5} color={PAL.primary} />
+                  </div>
+                </div>
+                <div style={{ padding: isMobile ? "28px 20px 24px" : "32px 24px 28px" }}>
+                  <h3 style={{ fontFamily: serif, fontSize: isMobile ? 18 : 22, fontWeight: 500, color: PAL.ink, margin: "0 0 10px" }}>{infra.t}</h3>
+                  <p style={{ fontFamily: sans, fontSize: 13, lineHeight: 1.6, color: PAL.muted, margin: 0 }}>{infra.d}</p>
+                </div>
               </div>
             ))}
           </div>

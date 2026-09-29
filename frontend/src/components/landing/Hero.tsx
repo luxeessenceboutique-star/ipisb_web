@@ -12,6 +12,10 @@ const PAL = {
   cream:  "oklch(97% 0.012 90)",
   paper:  "oklch(99% 0.005 160)",
   line:   "oklch(88% 0.015 170)",
+  // Light variants used for text sitting over the background video
+  paperOnVideo: "oklch(98% 0.005 160)",
+  mutedOnVideo: "oklch(85% 0.015 175)",
+  lineOnVideo:  "oklch(45% 0.02 175 / .4)",
 };
 const serif = '"Cormorant Garamond", Georgia, serif';
 const sans  = '"Manrope", system-ui, sans-serif';
@@ -31,13 +35,42 @@ export function Hero() {
 
   const pad = isMobile ? "64px 20px 48px" : isTablet ? "80px 32px 60px" : "100px 40px 80px";
 
+  // Background video is skipped on mobile — not rendered at all, so the
+  // browser never fetches it (saves data on the connections that need it most).
+  const showVideo = !isMobile;
+
   return (
     <section style={{
       position: "relative",
-      background: `linear-gradient(180deg, ${PAL.cream}, ${PAL.paper})`,
+      background: showVideo ? PAL.ink : `linear-gradient(180deg, ${PAL.cream}, ${PAL.paper})`,
       overflow: "hidden",
     }}>
-      {!isMobile && (
+      {showVideo && (
+        <>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster="/ipisb-logo-full.png"
+            aria-hidden="true"
+            style={{
+              position: "absolute", inset: 0,
+              width: "100%", height: "100%",
+              objectFit: "cover",
+            }}
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+          </video>
+          <div style={{
+            position: "absolute", inset: 0,
+            background: `linear-gradient(180deg, oklch(15% 0.03 175 / .82) 0%, oklch(15% 0.03 175 / .62) 55%, oklch(15% 0.03 175 / .78) 100%)`,
+          }} />
+        </>
+      )}
+
+      {!isMobile && !showVideo && (
         <div style={{ position: "absolute", right: -120, top: 40, opacity: .05, pointerEvents: "none" }}>
           <Logo size={540} />
         </div>
@@ -59,7 +92,7 @@ export function Hero() {
 
         {/* Headline */}
         <h1 className="anim-rise-1" style={{
-          fontFamily: serif, fontWeight: 500, color: PAL.ink,
+          fontFamily: serif, fontWeight: 500, color: showVideo ? PAL.paperOnVideo : PAL.ink,
           fontSize: isMobile ? "clamp(48px,12vw,64px)" : "clamp(64px, 7vw, 96px)",
           lineHeight: .97, letterSpacing: "-.025em", margin: "24px 0 0", maxWidth: 960,
         }}>
@@ -75,12 +108,12 @@ export function Hero() {
           marginTop: isMobile ? 28 : 48,
           alignItems: "end",
         }}>
-          <p style={{ fontFamily: sans, fontSize: isMobile ? 15 : 17, lineHeight: 1.6, color: PAL.text, margin: 0 }}>
+          <p style={{ fontFamily: sans, fontSize: isMobile ? 15 : 17, lineHeight: 1.6, color: showVideo ? PAL.mutedOnVideo : PAL.text, margin: 0 }}>
             {t("hero.body")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <Link to="/contact" className="u-hover-lift" style={{
-              background: PAL.ink, color: PAL.paper,
+              background: showVideo ? PAL.primary : PAL.ink, color: PAL.paper,
               fontFamily: sans, fontSize: 14, fontWeight: 600,
               padding: "16px 24px", borderRadius: 999,
               letterSpacing: ".01em", textDecoration: "none",
@@ -89,8 +122,8 @@ export function Hero() {
               {t("hero.cta1")}
             </Link>
             <Link to="/formations" className="u-hover-lift" style={{
-              background: "transparent", color: PAL.ink,
-              border: `1px solid ${PAL.line}`,
+              background: "transparent", color: showVideo ? PAL.paperOnVideo : PAL.ink,
+              border: `1px solid ${showVideo ? "oklch(90% 0.01 175 / .35)" : PAL.line}`,
               fontFamily: sans, fontSize: 14, fontWeight: 500,
               padding: "15px 24px", borderRadius: 999,
               textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8,
@@ -105,17 +138,17 @@ export function Hero() {
           marginTop: isMobile ? 48 : 88,
           display: "grid",
           gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
-          borderTop: `1px solid ${PAL.line}`, paddingTop: 32, gap: isMobile ? 24 : 0,
+          borderTop: `1px solid ${showVideo ? PAL.lineOnVideo : PAL.line}`, paddingTop: 32, gap: isMobile ? 24 : 0,
         }}>
           {stats.map((s, i) => (
             <div key={i} style={{
               paddingLeft: !isMobile && i ? 32 : 0,
-              borderLeft: !isMobile && i ? `1px solid ${PAL.line}` : "none",
+              borderLeft: !isMobile && i ? `1px solid ${showVideo ? PAL.lineOnVideo : PAL.line}` : "none",
             }}>
-              <div style={{ fontFamily: serif, fontSize: isMobile ? 40 : 52, fontWeight: 500, color: PAL.ink, lineHeight: 1, letterSpacing: "-.025em" }}>
+              <div style={{ fontFamily: serif, fontSize: isMobile ? 40 : 52, fontWeight: 500, color: showVideo ? PAL.paperOnVideo : PAL.ink, lineHeight: 1, letterSpacing: "-.025em" }}>
                 <CountUp value={s.v} duration={1400} />
               </div>
-              <div style={{ fontFamily: sans, fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase" as const, color: PAL.muted, marginTop: 8 }}>
+              <div style={{ fontFamily: sans, fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase" as const, color: showVideo ? PAL.mutedOnVideo : PAL.muted, marginTop: 8 }}>
                 {s.k}
               </div>
             </div>

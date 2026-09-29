@@ -16,47 +16,10 @@ FAST_MODEL = "gpt-4.1-mini"
 CHAT_MODEL = "gpt-4.1-mini"
 
 # Registration stages
-Stage = Literal["chat", "collect_info", "collect_docs", "review", "confirmed"]
+Stage = Literal["chat", "collect_info", "review", "confirmed"]
 
 # Required info slots (in collection order)
 REQUIRED_SLOTS = ["telephone", "nom", "email", "filiere", "niveau_bac", "ville"]
-
-# Required documents (in collection order)
-REQUIRED_DOCS = ["cin", "bac", "photo", "motivation"]
-
-DOC_LABELS = {
-    "cin":        "CIN (Carte d'Identité Nationale)",
-    "bac":        "Certificat Bac (Baccalauréat)",
-    "photo":      "Photo d'identité récente",
-    "motivation": "Lettre de Motivation (PDF ou Word)",
-}
-
-DOC_LABELS_I18N: dict[str, dict[str, str]] = {
-    "fr": {
-        "cin":        "CIN (Carte d'Identité Nationale)",
-        "bac":        "Certificat Bac (Baccalauréat)",
-        "photo":      "Photo d'identité récente",
-        "motivation": "Lettre de Motivation (PDF ou Word)",
-    },
-    "ar": {
-        "cin":        "بطاقة الهوية الوطنية (CIN)",
-        "bac":        "شهادة الباكالوريا",
-        "photo":      "صورة شخصية حديثة",
-        "motivation": "رسالة التحفيز (PDF أو Word)",
-    },
-    "en": {
-        "cin":        "National ID Card (CIN)",
-        "bac":        "Baccalaureate Certificate",
-        "photo":      "Recent identity photo",
-        "motivation": "Motivation Letter (PDF or Word)",
-    },
-    "darija": {
-        "cin":        "CIN (Carte d'Identité)",
-        "bac":        "Certificat Bac",
-        "photo":      "Photo d'identité récente",
-        "motivation": "Lettre de Motivation (PDF wla Word)",
-    },
-}
 
 SLOT_QUESTIONS = {
     "telephone":  "son numéro de téléphone (WhatsApp si possible)",
@@ -143,20 +106,6 @@ THANKS_WITH_NAME: dict[str, str] = {
     "darija": "Shukran, {name} ! 😊 ",
 }
 
-DOC_REPLY_FIRST: dict[str, str] = {
-    "fr":     "Parfait ! Pour compléter votre dossier, j'ai besoin de vos documents.\n\nCommençons par : **{label}**\nCliquez sur le bouton de téléversement ci-dessous.",
-    "ar":     "ممتاز ! لإكمال ملفك، أحتاج إلى وثائقك.\n\nلنبدأ بـ : **{label}**\nانقر على زر الرفع أدناه.",
-    "en":     "Great! To complete your file, I need your documents.\n\nLet's start with: **{label}**\nClick the upload button below.",
-    "darija": "Mzyan ! Bach nkamlu dossier dyalek, khassni l-wthayeq dyalek.\n\nNbdaw b : **{label}**\nClick l-button dyal upload lta7t.",
-}
-
-DOC_REPLY_NEXT: dict[str, str] = {
-    "fr":     "Merci pour **{prev}** ! ✅\n\nVeuillez maintenant téléverser : **{label}**\nCliquez sur le bouton de téléversement ci-dessous.",
-    "ar":     "شكراً على **{prev}** ! ✅\n\nيرجى الآن رفع : **{label}**\nانقر على زر الرفع أدناه.",
-    "en":     "Thanks for **{prev}**! ✅\n\nPlease now upload: **{label}**\nClick the upload button below.",
-    "darija": "Shukran 3la **{prev}** ! ✅\n\nDaba 3afak rfe3 : **{label}**\nClick l-button dyal upload lta7t.",
-}
-
 
 class ChatState(TypedDict):
     messages:    list[dict]   # [{"role": "user"|"assistant", "content": str}]
@@ -164,7 +113,7 @@ class ChatState(TypedDict):
     system_prompt: str
     language:    str
     # --- registration flow ---
-    stage:       str          # chat | collect_info | collect_docs | review | confirmed
+    stage:       str          # chat | collect_info | review | confirmed
     slots:       dict         # collected info: nom, telephone, email, filiere, etc.
     docs:        dict         # {"cin": {"url": "...", "filename": "..."}, ...}
     session_id:  str
@@ -391,6 +340,10 @@ def lead_node(state: ChatState) -> dict:
 
     messages   = state.get("messages", [])
     stage      = state.get("stage", "chat")
+    # Backward-compat: sessions saved before document collection was removed
+    # may still carry the old collect_docs stage — treat them as ready for review.
+    if stage == "collect_docs":
+        stage = "review"
     slots      = dict(state.get("slots", {}))
     docs       = dict(state.get("docs", {}))
     session_id = state.get("session_id", "")
@@ -459,7 +412,7 @@ def lead_node(state: ChatState) -> dict:
             }
 
         # All info collected → early-save to Airtable so the lead is captured
-        # even if the user abandons before uploading documents or confirming.
+        # even if the user abandons before confirming.
         if not airtable_record_id:
             try:
                 from .airtable_client import save_candidature
@@ -469,35 +422,6 @@ def lead_node(state: ChatState) -> dict:
             except Exception as e:
                 log.warning("Early Airtable save failed: %s", e)
 
-        stage = "collect_docs"
-
-    # ── Stage: collect_docs ──────────────────────────────────────────────────
-    if stage == "collect_docs":
-        missing_doc = next((d for d in REQUIRED_DOCS if d not in docs), None)
-
-        if missing_doc:
-            doc_labels_lang = DOC_LABELS_I18N.get(lang, DOC_LABELS_I18N["fr"])
-            label = doc_labels_lang[missing_doc]
-            already_uploaded = [doc_labels_lang[d] for d in REQUIRED_DOCS if d in docs]
-
-            # Hardcoded reply — bypass LLM entirely to prevent off-script responses.
-            if already_uploaded:
-                tmpl = DOC_REPLY_NEXT.get(lang, DOC_REPLY_NEXT["fr"])
-                reply = tmpl.format(prev=already_uploaded[-1], label=label)
-            else:
-                tmpl = DOC_REPLY_FIRST.get(lang, DOC_REPLY_FIRST["fr"])
-                reply = tmpl.format(label=label)
-
-            return {
-                "stage":              "collect_docs",
-                "slots":              slots,
-                "docs":               docs,
-                "system_prompt":      "",
-                "hardcoded_reply":    reply,
-                "airtable_record_id": airtable_record_id,
-            }
-
-        # All docs collected → move to review
         stage = "review"
 
     # ── Stage: review ────────────────────────────────────────────────────────
@@ -509,15 +433,10 @@ def lead_node(state: ChatState) -> dict:
         if any(kw in last_lower for kw in ["confirmer", "confirme", "confirm", "oui", "yes", "valider", "valide"]):
             stage = "confirmed"
         else:
-            docs_summary = "\n".join(
-                f"  - {DOC_LABELS.get(k, k)}: {v.get('filename', v.get('url', ''))}"
-                for k, v in docs.items()
-            )
             prompt = (
                 "Tu es Aya, assistante d'inscription de l'IPISB.\n"
                 "Voici le récapitulatif complet du dossier du candidat.\n"
                 f"Informations personnelles :\n{json.dumps(slots, indent=2, ensure_ascii=False)}\n\n"
-                f"Documents soumis :\n{docs_summary}\n\n"
                 "Présente ce récapitulatif de manière claire et élégante.\n"
                 "Demande au candidat de confirmer en cliquant sur 'Confirmer' ou de corriger en cliquant sur 'Corriger'.\n"
                 "Précise que la confirmation est définitive et que son dossier sera soumis."

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useBreakpoint } from "@/lib/useBreakpoint";
-import { MessageCircle, X, Send, Paperclip, ChevronDown } from "lucide-react";
+import { MessageCircle, X, Send, ChevronDown } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:9000";
 
@@ -22,8 +22,7 @@ const mono  = '"JetBrains Mono", ui-monospace, monospace';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Lang  = "fr" | "en" | "ar" | "darija";
-type Stage = "chat" | "collect_info" | "collect_docs" | "review" | "confirmed";
-type DocType = "cin" | "bac" | "photo" | "motivation";
+type Stage = "chat" | "collect_info" | "review" | "confirmed";
 
 interface Msg {
   role:    "user" | "assistant";
@@ -43,27 +42,11 @@ const LANGS = [
   { code: "darija" as Lang, flag: "🇲🇦", label: "الدارجة",   sub: "كنهضر بالدارجة",    rtl: true  },
 ];
 
-const DOC_LABELS: Record<DocType, string> = {
-  cin:        "CIN (Carte d'Identité)",
-  bac:        "Certificat Bac",
-  photo:      "Photo d'identité",
-  motivation: "Lettre de Motivation",
-};
-
-// Keywords in bot messages that indicate which doc is being requested
-const DOC_KEYWORDS: Record<DocType, RegExp> = {
-  cin:        /CIN|carte d.identit[ée]|carte nationale|بطاقة.الهوية|هوية.وطنية/i,
-  bac:        /baccal[aé]ur[eé]at|certificat bac|diplôme du bac|باكالوريا|baccalaureate/i,
-  photo:      /photo d.identit[ée]|photo récente|photo passeport|صورة.شخصية|identity photo/i,
-  motivation: /lettre de motivation|motivation letter|رسالة.التحفيز/i,
-};
-
 const STAGE_LABELS: Record<Stage, string> = {
   chat:         "",
-  collect_info: "Étape 1/4 — Informations",
-  collect_docs: "Étape 2/4 — Documents",
-  review:       "Étape 3/4 — Récapitulatif",
-  confirmed:    "Étape 4/4 — Confirmé",
+  collect_info: "Étape 1/3 — Informations",
+  review:       "Étape 2/3 — Récapitulatif",
+  confirmed:    "Étape 3/3 — Confirmé",
 };
 
 const WELCOME: Record<Lang, string> = {
@@ -163,13 +146,6 @@ function renderMarkdown(text: string) {
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/\n/g, "<br/>");
-}
-
-function detectRequestedDoc(botMessage: string, uploadedDocs: Record<string, DocInfo> = {}): DocType | null {
-  for (const [docType, pattern] of Object.entries(DOC_KEYWORDS)) {
-    if (pattern.test(botMessage) && !uploadedDocs[docType]) return docType as DocType;
-  }
-  return null;
 }
 
 function generateSessionId(): string {
@@ -324,137 +300,13 @@ function TypingIndicator() {
   );
 }
 
-// ── Document upload button ────────────────────────────────────────────────────
-function DocUploadButton({
-  docType,
-  sessionId,
-  onUploaded,
-  disabled,
-}: {
-  docType:   DocType;
-  sessionId: string;
-  onUploaded: (info: { url: string; filename: string; document_type: DocType }) => void;
-  disabled:  boolean;
-}) {
-  const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
-  const [progress, setProgress] = useState(0);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setStatus("uploading");
-    setProgress(10);
-
-    const fd = new FormData();
-    fd.append("session_id", sessionId);
-    fd.append("document_type", docType);
-    fd.append("file", file);
-
-    try {
-      // Simulate progress increments while waiting
-      const ticker = setInterval(() => {
-        setProgress(p => Math.min(p + 15, 85));
-      }, 300);
-
-      const res = await fetch(`${API}/api/chat/upload`, {
-        method: "POST",
-        body: fd,
-      });
-
-      clearInterval(ticker);
-      setProgress(100);
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Upload failed (${res.status})`);
-      }
-
-      const data = await res.json();
-      setStatus("done");
-      onUploaded(data);
-    } catch (err) {
-      console.error("Upload error:", err);
-      setStatus("error");
-    }
-  }
-
-  const label = DOC_LABELS[docType];
-  const colors = {
-    idle:      { bg: D.card2, border: D.teal,    text: D.teal2,  btn: "Joindre le fichier" },
-    uploading: { bg: D.card2, border: D.border,  text: D.muted,  btn: `Envoi… ${progress}%` },
-    done:      { bg: D.card2, border: D.green,   text: D.green,  btn: "Envoyé ✓" },
-    error:     { bg: D.card2, border: D.red,     text: D.red,    btn: "Réessayer" },
-  };
-  const c = colors[status];
-
-  return (
-    <div style={{
-      display:      "flex",
-      alignItems:   "center",
-      gap:          10,
-      marginBottom: 10,
-      marginLeft:   36,
-    }}>
-      <input
-        ref={fileRef}
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx"
-        style={{ display: "none" }}
-        onChange={handleFile}
-        disabled={disabled || status === "uploading" || status === "done"}
-      />
-      <button
-        onClick={() => {
-          if (status === "done") return;
-          // Reset value so re-selecting the same file after an error re-fires onChange
-          if (fileRef.current) fileRef.current.value = "";
-          fileRef.current?.click();
-        }}
-        disabled={disabled || status === "uploading" || status === "done"}
-        aria-label={`${c.btn} — ${label}`}
-        className="cw-focus"
-        style={{
-          background:   c.bg,
-          border:       `1px dashed ${c.border}`,
-          borderRadius: 10,
-          padding:      "8px 14px",
-          cursor:       status === "done" ? "default" : "pointer",
-          display:      "flex",
-          alignItems:   "center",
-          gap:          8,
-          fontFamily:   sans,
-          fontSize:     12,
-          color:        c.text,
-          transition:   "all .2s",
-          opacity:      status === "uploading" ? 0.7 : 1,
-        }}
-      >
-        {status === "done"
-          ? <span style={{ fontSize: 14, color: D.green, fontWeight: 700 }}>✓</span>
-          : status === "error"
-          ? <span style={{ fontSize: 14, color: D.red, fontWeight: 700 }}>⚠</span>
-          : <Paperclip size={15} strokeWidth={1.75} />
-        }
-        <span>
-          <span style={{ fontWeight: 600 }}>{c.btn}</span>
-          <span style={{ color: D.muted, marginLeft: 6 }}>— {label}</span>
-        </span>
-      </button>
-    </div>
-  );
-}
-
 // ── Review summary card ───────────────────────────────────────────────────────
 function ReviewCard({
   slots,
-  docs,
   onConfirm,
   onCorrect,
 }: {
   slots:     Record<string, string>;
-  docs:      Record<string, DocInfo>;
   onConfirm: () => void;
   onCorrect: () => void;
 }) {
@@ -496,23 +348,6 @@ function ReviewCard({
           ) : null
         )}
       </div>
-
-      {Object.keys(docs).length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ color: D.muted, fontSize: 10.5, fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Documents soumis
-          </div>
-          {Object.entries(docs).map(([docType, info]) => (
-            <div key={docType} style={{ display: "flex", gap: 8, marginBottom: 3, alignItems: "center" }}>
-              <span style={{ color: D.green }}>✓</span>
-              <span style={{ color: D.muted, minWidth: 110 }}>{DOC_LABELS[docType as DocType] || docType}</span>
-              <span style={{ color: D.paper, fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 120 }}>
-                {info.filename}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
 
       <div style={{ display: "flex", gap: 8 }}>
         <button
@@ -570,12 +405,11 @@ function StageProgress({ stage }: { stage: Stage }) {
   const stepMap: Record<Stage, number> = {
     chat:         0,
     collect_info: 1,
-    collect_docs: 2,
-    review:       3,
-    confirmed:    4,
+    review:       2,
+    confirmed:    3,
   };
   const step  = stepMap[stage] ?? 0;
-  const total = 4;
+  const total = 3;
   const pct   = (step / total) * 100;
 
   return (
@@ -642,8 +476,6 @@ export function ChatWidget() {
   const [docs,      setDocs]      = useState<Record<string, DocInfo>>({});
   const [sessionId, setSessionId] = useState<string>("");
 
-  // Which doc is currently being requested (for upload button display)
-  const [pendingDoc, setPendingDoc] = useState<DocType | null>(null);
   // Whether the review card has already been shown for the current review stage
   const [reviewShown, setReviewShown] = useState(false);
 
@@ -678,7 +510,7 @@ export function ChatWidget() {
   // ── Auto-scroll ─────────────────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streaming, pendingDoc, reviewShown]);
+  }, [messages, streaming, reviewShown]);
 
   // ── Focus on open ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -687,19 +519,6 @@ export function ChatWidget() {
       if (lang) setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open, lang]);
-
-  // ── Detect which doc is requested from the last bot message ────────────────
-  useEffect(() => {
-    if (stage !== "collect_docs") {
-      setPendingDoc(null);
-      return;
-    }
-    const lastBot = messages.slice().reverse().find(m => m.role === "assistant");
-    if (lastBot) {
-      const detected = detectRequestedDoc(lastBot.content, docs);
-      setPendingDoc(detected);
-    }
-  }, [messages, stage, docs]);
 
   // ── Reset review card shown when stage changes ──────────────────────────────
   useEffect(() => {
@@ -716,7 +535,7 @@ export function ChatWidget() {
   // Posts `history` to /api/chat/stream and streams the reply into the last
   // (empty) assistant message. Handles the leading meta chunk per protocol:
   //   data: {"meta": {stage, slots, docs, session_id}}  then  data: {"text": "…"}
-  async function streamChat(history: Msg[], docsOverride?: Record<string, DocInfo>) {
+  async function streamChat(history: Msg[]) {
     const res = await fetch(`${API}/api/chat/stream`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
@@ -726,7 +545,7 @@ export function ChatWidget() {
         language:   lang ?? "fr",
         stage,
         slots,
-        docs:       docsOverride ?? docs,
+        docs,
       }),
     });
 
@@ -786,7 +605,6 @@ export function ChatWidget() {
     const text = (override ?? input).trim();
     if (!text || streaming || !lang) return;
     setInput("");
-    setPendingDoc(null);
     // Reset the auto-grown textarea back to a single line
     if (inputRef.current) inputRef.current.style.height = "auto";
 
@@ -804,38 +622,6 @@ export function ChatWidget() {
       setMessages(prev => {
         const next = [...prev];
         next[next.length - 1] = { role: "assistant", content: fallback };
-        return next;
-      });
-    } finally {
-      setStreaming(false);
-    }
-  }
-
-  // ── After a doc is uploaded, notify the bot ─────────────────────────────────
-  async function handleDocUploaded(info: { url: string; filename: string; document_type: DocType }) {
-    const newDocs = { ...docs, [info.document_type]: { url: info.url, filename: info.filename } };
-    setDocs(newDocs);
-    setPendingDoc(null);
-
-    // Send a synthetic user message to advance the flow
-    const label = DOC_LABELS[info.document_type] || info.document_type;
-    const confirmText = `[Document envoyé] ${label} : ${info.filename}`;
-
-    const userMsg: Msg = { role: "user", content: confirmText };
-    const history = [...messages, userMsg];
-    setMessages([...history, { role: "assistant", content: "" }]);
-    setStreaming(true);
-
-    try {
-      await streamChat(history, newDocs);
-    } catch (err) {
-      console.error("Post-upload send error:", err);
-      setMessages(prev => {
-        const next = [...prev];
-        next[next.length - 1] = {
-          role:    "assistant",
-          content: `Document **${label}** bien reçu ✓ (${info.filename})`,
-        };
         return next;
       });
     } finally {
@@ -990,22 +776,10 @@ export function ChatWidget() {
                 {/* Typing indicator */}
                 {streaming && messages[messages.length - 1]?.content === "" && <TypingIndicator />}
 
-                {/* Document upload button — appears after a doc request in collect_docs stage */}
-                {!streaming && pendingDoc && stage === "collect_docs" && sessionId && (
-                  <DocUploadButton
-                    key={pendingDoc}
-                    docType={pendingDoc}
-                    sessionId={sessionId}
-                    onUploaded={handleDocUploaded}
-                    disabled={streaming}
-                  />
-                )}
-
                 {/* Review card — appears when stage is review */}
                 {showReviewCard && (
                   <ReviewCard
                     slots={slots}
-                    docs={docs}
                     onConfirm={handleConfirm}
                     onCorrect={handleCorrect}
                   />

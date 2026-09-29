@@ -24,18 +24,18 @@ allie rigueur scientifique, pratique hospitalière et technologie numérique.
 
 ### 1. Infirmier Polyvalent
 - Durée : 3 ans (6 semestres)
-- Niveau requis : Baccalauréat
+- Niveau requis : Baccalauréat obtenu (toutes séries)
 - Débouchés : hôpitaux, cliniques, urgences, réanimation, secteur libéral
 - Spécificités : soins généraux, urgences, réanimation, médecine interne, chirurgie, stages pratiques dès le 1er semestre
-- Admission : Bac scientifique, dossier + entretien
+- Admission : Baccalauréat obtenu (toutes séries), sur dossier
 - Stages : Stages pratiques en établissements de soins partenaires
 
 ### 2. Infirmier Auxiliaire
 - Durée : 2 ans (4 semestres)
-- Niveau requis : Niveau Baccalauréat
+- Niveau requis : Baccalauréat obtenu ou diplôme d'Aide-Soignant
 - Débouchés : hôpitaux, cliniques, maisons de retraite, soins de suite, aide à domicile
 - Spécificités : assistance à l'infirmier polyvalent, suivi des patients, soins de base, gestion du confort
-- Admission : Niveau Bac (terminale), dossier + entretien
+- Admission : Baccalauréat obtenu ou diplôme d'Aide-Soignant, sur dossier
 - Stages : Stages pratiques en établissements de soins
 
 ### 3. Aide-Soignant
@@ -43,7 +43,7 @@ allie rigueur scientifique, pratique hospitalière et technologie numérique.
 - Niveau requis : 3ème Année Collégiale (BEPC)
 - Débouchés : maisons de retraite, EHPAD, crèches, hospitalisation à domicile, établissements médico-sociaux
 - Spécificités : accompagnement dans la vie quotidienne, soins d'hygiène et de confort, maintien de l'autonomie
-- Admission : 3ème collégiale, dossier + entretien de motivation
+- Admission : 3ème collégiale, sur dossier
 - Stages : Stages en établissements de santé et médico-sociaux
 
 ## Admission & Inscription
@@ -51,7 +51,8 @@ allie rigueur scientifique, pratique hospitalière et technologie numérique.
 - Dossier requis : relevé de notes Bac, CV, lettre de motivation, pièce d'identité
 - Frais de dossier : 200 MAD (non remboursables)
 - Frais de scolarité : variables selon filière (contacter l'administration)
-- Bourses et facilités de paiement disponibles
+- Modalités de paiement : annuel ou mensuel (10 mensualités par an) — réduction accordée pour le paiement annuel
+- Bourses disponibles sur dossier
 - Délai de réponse : 2–3 semaines après dépôt du dossier
 
 ## Plateforme numérique IPISB Connect

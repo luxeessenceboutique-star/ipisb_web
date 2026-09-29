@@ -27,6 +27,7 @@ const mono  = '"JetBrains Mono", ui-monospace, monospace';
 const PROG_COLORS = [PAL.primary, PAL.mid, PAL.teal];
 const PROG_IDS    = ["polyvalent", "auxiliaire", "aide-soignant"];
 const PROG_CATS   = ["licence-soins", "licence-soins", "soins"];
+const PROG_IMAGES = ["/images/program-polyvalent.jpg", "/images/program-auxiliaire.jpg", "/images/program-aide-soignant.jpg"];
 
 function FormationsPage() {
   const { t } = useI18n();
@@ -48,7 +49,11 @@ function FormationsPage() {
     t: t(`fp.p${i}.t`), d: t(`fp.p${i}.d`), dur: t(`fp.p${i}.dur`),
     req: t(`fp.p${i}.req`), hours: t(`fp.p${i}.hours`), obj: t(`fp.p${i}.obj`),
     careers: [t(`fp.p${i}.c1`), t(`fp.p${i}.c2`), t(`fp.p${i}.c3`), t(`fp.p${i}.c4`)],
-    color: PROG_COLORS[i],
+    color: PROG_COLORS[i], img: PROG_IMAGES[i],
+  }));
+
+  const comparisons = [0, 1, 2].map((i) => ({
+    t: t(`fp.p${i}.t`), def: t(`fp.p${i}.def`), who: t(`fp.p${i}.who`), color: PROG_COLORS[i],
   }));
 
   const filteredPrograms = programs.filter((p) => {
@@ -69,6 +74,28 @@ function FormationsPage() {
             {t("fp.h1a")}<br /><em style={{ fontStyle: "italic", color: PAL.primary }}>{t("fp.h1b")}</em>
           </h1>
           <p style={{ fontFamily: sans, fontSize: isMobile ? 15 : 18, color: PAL.text, lineHeight: 1.6, maxWidth: 680, marginTop: 20 }}>{t("fp.body")}</p>
+        </section>
+
+        {/* Understanding the professions — definitions to help visitors tell the 3 paths apart */}
+        <section style={{ padding: isMobile ? "0 20px 48px" : isTablet ? "0 32px 60px" : "0 40px 80px", maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 24, padding: isMobile ? "28px 20px" : "48px 56px" }}>
+            <div style={{ fontFamily: mono, fontSize: 11, color: PAL.primary, letterSpacing: ".14em", textTransform: "uppercase" as const, fontWeight: 600 }}>{t("fp.compare.eyebrow")}</div>
+            <h2 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(28px, 3.5vw, 44px)", color: PAL.ink, margin: "12px 0 0", letterSpacing: "-.02em", maxWidth: 720 }}>
+              {t("fp.compare.h2a")} <em style={{ fontStyle: "italic", color: PAL.primary }}>{t("fp.compare.h2b")}</em>
+            </h2>
+            <p style={{ fontFamily: sans, fontSize: isMobile ? 14 : 15, color: PAL.text, lineHeight: 1.65, maxWidth: 760, marginTop: 16 }}>{t("fp.compare.body")}</p>
+
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16, marginTop: 32 }}>
+              {comparisons.map((c, i) => (
+                <div key={i} style={{ background: PAL.paper, border: `1px solid ${PAL.line}`, borderRadius: 18, padding: isMobile ? "20px 18px" : "24px 22px" }}>
+                  <div style={{ width: 28, height: 3, background: c.color, borderRadius: 2, marginBottom: 14 }} />
+                  <h3 style={{ fontFamily: serif, fontWeight: 500, fontSize: 20, color: PAL.ink, margin: "0 0 10px" }}>{c.t}</h3>
+                  <p style={{ fontFamily: sans, fontSize: 13, lineHeight: 1.6, color: PAL.text, margin: "0 0 12px" }}>{c.def}</p>
+                  <p style={{ fontFamily: sans, fontSize: 12.5, lineHeight: 1.6, color: PAL.muted, margin: 0, fontStyle: "italic" as const }}>{c.who}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section style={{ padding: isMobile ? "0 20px" : isTablet ? "0 32px" : "0 40px", maxWidth: 1280, margin: "0 auto", marginBottom: 32 }}>
@@ -99,7 +126,11 @@ function FormationsPage() {
               {filteredPrograms.map((p) => {
                 const isExpanded = expandedId === p.id;
                 return (
-                  <div key={p.id} style={{ background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 24, padding: isMobile ? "24px 20px" : "36px 32px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div key={p.id} style={{ background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 24, overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                    <div style={{ aspectRatio: "16 / 9", overflow: "hidden" }}>
+                      <img src={p.img} alt={p.t} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                    </div>
+                    <div style={{ padding: isMobile ? "24px 20px" : "28px 32px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                     <div>
                       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" as const }}>
                         <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: p.color, background: p.color+"18", borderRadius: 999, padding: "3px 10px" }}>{p.dur}</span>
@@ -130,6 +161,7 @@ function FormationsPage() {
                         {isExpanded ? t("fp.collapse") : t("fp.details")}
                       </button>
                       <a href="/contact" style={{ fontFamily: sans, fontSize: 12, fontWeight: 600, color: PAL.paper, background: PAL.ink, borderRadius: 99, padding: "8px 16px", textDecoration: "none" }}>{t("fp.apply")}</a>
+                    </div>
                     </div>
                   </div>
                 );

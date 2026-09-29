@@ -214,7 +214,7 @@ C'est la partie la plus avancée du backend. Il utilise **LangGraph** pour crée
 
 #### Comment ça marche
 
-Le chatbot suit un **parcours en 5 étapes** :
+Le chatbot suit un **parcours en 4 étapes** :
 
 ```
 [1] chat          → Conversation libre : répond aux questions sur l'école
@@ -223,20 +223,17 @@ Le chatbot suit un **parcours en 5 étapes** :
 [2] collect_info  → Collecte 6 informations : nom, téléphone, email, filière, niveau bac, ville
          │
          ▼
-[3] collect_docs  → Collecte 4 documents : CIN, Bac, photo, lettre de motivation
+[3] review        → Récapitulatif de la candidature pour confirmation
          │
          ▼
-[4] review        → Récapitulatif de la candidature pour confirmation
-         │
-         ▼
-[5] confirmed     → Enregistre dans Airtable + envoie un email de confirmation
+[4] confirmed     → Enregistre dans Airtable + envoie un email de confirmation
 ```
 
 #### Fichiers du chatbot
 
 | Fichier | Rôle |
 |---|---|
-| `agent.py` | Machine à états LangGraph — logique des 5 étapes |
+| `agent.py` | Machine à états LangGraph — logique des 4 étapes |
 | `knowledge.py` | Base de connaissances sur l'école + prompts système (4 modes : FAQ, conseiller, collecte, général) |
 | `airtable_client.py` | Extrait les infos de la conversation et les sauvegarde dans Airtable (CRM) |
 | `supabase_client.py` | Sauvegarde les sessions de conversation dans Supabase |
