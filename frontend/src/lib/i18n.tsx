@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
-type Lang = "fr" | "en" | "ar";
+export type Lang = "fr" | "en" | "ar";
 
 const translations = {
   fr: {
@@ -52,6 +52,18 @@ const translations = {
     "feat.07.d":     "Publiez et collaborez sur des projets de recherche avec vos pairs.",
     "feat.08":       "Bien-être étudiant",
     "feat.08.d":     "Soutien psychologique, activités et programmes holistiques.",
+    // Landing — Language options
+    "lang.eyebrow":  "§ Plateforme multilingue",
+    "lang.h2a":      "Une seule plateforme,",
+    "lang.h2b":      "trois langues.",
+    "lang.body":     "IPISB Connect s'adapte à votre langue de travail — cours, examens, messagerie et administration restent cohérents, quelle que soit la langue choisie.",
+    "lang.cta":      "Passer en {label} →",
+    "lang.fr.label": "Français",
+    "lang.fr.desc":  "Langue principale d'enseignement : cours, examens, supports pédagogiques et communication administrative entièrement en français.",
+    "lang.en.label": "English",
+    "lang.en.desc":  "Ressources et interface disponibles en anglais pour préparer nos étudiants aux standards internationaux de la santé.",
+    "lang.ar.label": "العربية",
+    "lang.ar.desc":  "Interface et échanges disponibles en arabe pour un accompagnement administratif adapté à chaque étudiant.",
     // Landing — Programs
     "prog.eyebrow":   "§ Formations proposées",
     "prog.h2a":       "Nos 3 filières",
@@ -728,6 +740,18 @@ const translations = {
     "feat.07.d":     "Publish and collaborate on research projects with your peers.",
     "feat.08":       "Student Wellness",
     "feat.08.d":     "Psychological support, activities, and holistic wellness programs.",
+    // Landing — Language options
+    "lang.eyebrow":  "§ Multilingual platform",
+    "lang.h2a":      "One platform,",
+    "lang.h2b":      "three languages.",
+    "lang.body":     "IPISB Connect adapts to your working language — courses, exams, messaging and administration stay consistent, whichever language you choose.",
+    "lang.cta":      "Switch to {label} →",
+    "lang.fr.label": "Français",
+    "lang.fr.desc":  "The main language of instruction: courses, exams, learning materials and administrative communication entirely in French.",
+    "lang.en.label": "English",
+    "lang.en.desc":  "Resources and interface available in English to prepare our students for international healthcare standards.",
+    "lang.ar.label": "العربية",
+    "lang.ar.desc":  "Interface and communication available in Arabic for administrative support tailored to each student.",
     // Landing — Programs
     "prog.eyebrow":   "§ Programs offered",
     "prog.h2a":       "Our 3",
@@ -1404,6 +1428,18 @@ const translations = {
     "feat.07.d":     "انشر وتعاون في مشاريع بحثية مع أقرانك.",
     "feat.08":       "الرفاه الطلابي",
     "feat.08.d":     "دعم نفسي وأنشطة وبرامج شاملة للرفاه.",
+    // Landing — Language options
+    "lang.eyebrow":  "§ منصة متعددة اللغات",
+    "lang.h2a":      "منصة واحدة،",
+    "lang.h2b":      "ثلاث لغات.",
+    "lang.body":     "تتكيف منصة IPISB Connect مع لغة عملك — تبقى الدروس والامتحانات والمراسلة والإدارة متسقة أياً كانت اللغة المختارة.",
+    "lang.cta":      "التبديل إلى {label} ←",
+    "lang.fr.label": "الفرنسية",
+    "lang.fr.desc":  "لغة التدريس الرئيسية: الدروس والامتحانات والدعائم التربوية والتواصل الإداري بالكامل باللغة الفرنسية.",
+    "lang.en.label": "الإنجليزية",
+    "lang.en.desc":  "موارد وواجهة متاحة باللغة الإنجليزية لإعداد طلابنا لمعايير الرعاية الصحية الدولية.",
+    "lang.ar.label": "العربية",
+    "lang.ar.desc":  "واجهة وتواصل متاحان باللغة العربية لمرافقة إدارية ملائمة لكل طالب.",
     // Landing — Programs
     "prog.eyebrow":   "§ التكوينات المقترحة",
     "prog.h2a":       "3 مسارات",
