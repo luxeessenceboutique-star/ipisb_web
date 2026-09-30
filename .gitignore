@@ -38,6 +38,9 @@ backend/secrets/
 # Vite
 .vite/
 
+# TanStack Router codegen cache
+.tanstack/
+
 # Logs
 *.log
 *.log.*

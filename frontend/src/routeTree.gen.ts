@@ -16,6 +16,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ActualitesRouteImport } from './routes/actualites'
 import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminActualitesRouteImport } from './routes/admin.actualites'
 
 const TemoignagesRoute = TemoignagesRouteImport.update({
   id: '/temoignages',
@@ -52,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminActualitesRoute = AdminActualitesRouteImport.update({
+  id: '/admin/actualites',
+  path: '/admin/actualites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/formations': typeof FormationsRoute
   '/plateforme': typeof PlateformeRoute
   '/temoignages': typeof TemoignagesRoute
+  '/admin/actualites': typeof AdminActualitesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/formations': typeof FormationsRoute
   '/plateforme': typeof PlateformeRoute
   '/temoignages': typeof TemoignagesRoute
+  '/admin/actualites': typeof AdminActualitesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/formations': typeof FormationsRoute
   '/plateforme': typeof PlateformeRoute
   '/temoignages': typeof TemoignagesRoute
+  '/admin/actualites': typeof AdminActualitesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/formations'
     | '/plateforme'
     | '/temoignages'
+    | '/admin/actualites'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/formations'
     | '/plateforme'
     | '/temoignages'
+    | '/admin/actualites'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/formations'
     | '/plateforme'
     | '/temoignages'
+    | '/admin/actualites'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   FormationsRoute: typeof FormationsRoute
   PlateformeRoute: typeof PlateformeRoute
   TemoignagesRoute: typeof TemoignagesRoute
+  AdminActualitesRoute: typeof AdminActualitesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/actualites': {
+      id: '/admin/actualites'
+      path: '/admin/actualites'
+      fullPath: '/admin/actualites'
+      preLoaderRoute: typeof AdminActualitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   FormationsRoute: FormationsRoute,
   PlateformeRoute: PlateformeRoute,
   TemoignagesRoute: TemoignagesRoute,
+  AdminActualitesRoute: AdminActualitesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

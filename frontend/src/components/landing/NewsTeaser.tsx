@@ -3,6 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useBreakpoint } from "@/lib/useBreakpoint";
 
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:9000";
+
+interface ApiArticle {
+  id: string; category: string; featured: boolean; image_url: string | null;
+  published_at: string; title: string; excerpt: string;
+}
+
 const L = {
   paper:   "oklch(99% 0.005 160)",
   cream:   "oklch(97% 0.012 90)",
@@ -16,16 +23,28 @@ const sans  = '"Manrope", system-ui, sans-serif';
 const mono  = '"JetBrains Mono", ui-monospace, monospace';
 
 export function NewsTeaser() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { isMobile, isTablet } = useBreakpoint();
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [article, setArticle] = useState<ApiArticle | null>(null);
+
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.1 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+
+  useEffect(() => {
+    fetch(`${API}/api/news?lang=${lang}&limit=20`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        const articles: ApiArticle[] = data?.articles ?? [];
+        if (articles.length > 0) setArticle(articles.find(a => a.featured) ?? articles[0]);
+      })
+      .catch(() => { /* keep static fallback content */ });
+  }, [lang]);
 
   const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "100px 40px";
   const accent = L.primary;
@@ -65,19 +84,25 @@ export function NewsTeaser() {
             <div style={{
               width: isMobile ? "100%" : "40%",
               height: isMobile ? 160 : "auto",
-              background: bg, display: "flex", alignItems: "center", justifyContent: "center",
-              position: "relative", flexShrink: 0,
+              background: article?.image_url ? undefined : bg, display: "flex", alignItems: "center", justifyContent: "center",
+              position: "relative", flexShrink: 0, overflow: "hidden",
             }}>
-              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 30% 50%, ${accent}22 0%, transparent 60%)` }} />
-              <span style={{ fontSize: 64, position: "relative" }}>🏥</span>
+              {article?.image_url ? (
+                <img src={article.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <>
+                  <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 30% 50%, ${accent}22 0%, transparent 60%)` }} />
+                  <span style={{ fontSize: 64, position: "relative" }}>🏥</span>
+                </>
+              )}
             </div>
             <div style={{ padding: isMobile ? 24 : 40, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: accent, letterSpacing: ".12em", textTransform: "uppercase" as const, background: accent + "15", padding: "4px 12px", borderRadius: 999 }}>{t("news.tag")}</span>
-                <span style={{ fontFamily: mono, fontSize: 10, color: L.muted, fontWeight: 600 }}>{t("news.date")}</span>
+                <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: accent, letterSpacing: ".12em", textTransform: "uppercase" as const, background: accent + "15", padding: "4px 12px", borderRadius: 999 }}>{article ? article.category : t("news.tag")}</span>
+                <span style={{ fontFamily: mono, fontSize: 10, color: L.muted, fontWeight: 600 }}>{article ? article.published_at : t("news.date")}</span>
               </div>
-              <h3 style={{ fontFamily: serif, fontSize: isMobile ? 20 : 28, color: L.ink, margin: "0 0 12px", fontWeight: 500, lineHeight: 1.2 }}>{t("news.title")}</h3>
-              <p style={{ fontFamily: sans, fontSize: 14, lineHeight: 1.65, color: L.muted, margin: 0 }}>{t("news.excerpt")}</p>
+              <h3 style={{ fontFamily: serif, fontSize: isMobile ? 20 : 28, color: L.ink, margin: "0 0 12px", fontWeight: 500, lineHeight: 1.2 }}>{article ? article.title : t("news.title")}</h3>
+              <p style={{ fontFamily: sans, fontSize: 14, lineHeight: 1.65, color: L.muted, margin: 0 }}>{article ? article.excerpt : t("news.excerpt")}</p>
               <div style={{ marginTop: 24, fontFamily: sans, fontSize: 12, fontWeight: 700, color: accent, opacity: hovered ? 1 : 0.6, transition: "opacity .2s" }}>{t("news.read")}</div>
             </div>
           </Link>

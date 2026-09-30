@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from deps import FRONTEND_URL, reset_db_client
-from routers import chatbot
+from routers import chatbot, news
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +50,7 @@ app.add_middleware(
 )
 
 app.include_router(chatbot.router, prefix="/api")
+app.include_router(news.router, prefix="/api")
 
 
 @app.get("/health")

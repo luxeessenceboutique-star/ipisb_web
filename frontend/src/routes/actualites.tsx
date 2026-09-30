@@ -1,9 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLayout } from "@/components/PageLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useBreakpoint } from "@/lib/useBreakpoint";
 import { Hospital, GraduationCap, Monitor, Building2, Microscope, Star, Newspaper, MailCheck, type LucideIcon } from "lucide-react";
+
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:9000";
+
+interface ApiArticle {
+  id: string; category: string; image_url: string | null;
+  published_at: string; read_time_minutes: number; title: string; excerpt: string;
+}
 
 export const Route = createFileRoute("/actualites")({
   component: ActualitesPage,
@@ -30,14 +37,29 @@ const ART_ACCENT = [PAL.primary, PAL.amber, PAL.green, PAL.teal, PAL.primary, PA
 const ART_ICONS: LucideIcon[] = [Hospital, GraduationCap, Monitor, Building2, Microscope, Star];
 const ART_CATS   = ["recherche","vie","plateforme","evenement","recherche","vie"];
 
+const CAT_VISUAL: Record<string, { bg: string; accent: string; Icon: LucideIcon }> = {
+  recherche:  { bg: ART_BG[0], accent: ART_ACCENT[0], Icon: Hospital },
+  vie:        { bg: ART_BG[1], accent: ART_ACCENT[1], Icon: GraduationCap },
+  plateforme: { bg: ART_BG[2], accent: ART_ACCENT[2], Icon: Monitor },
+  evenement:  { bg: ART_BG[3], accent: ART_ACCENT[3], Icon: Building2 },
+};
+
 function ActualitesPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { isMobile, isTablet } = useBreakpoint();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [email, setEmail] = useState("");
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [apiArticles, setApiArticles] = useState<ApiArticle[] | null>(null);
+
+  useEffect(() => {
+    fetch(`${API}/api/news?lang=${lang}&limit=50`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (data?.articles?.length) setApiArticles(data.articles); })
+      .catch(() => { /* keep static fallback content */ });
+  }, [lang]);
 
   const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "100px 40px";
 
@@ -49,11 +71,19 @@ function ActualitesPage() {
     { id: "evenement",  label: t("act.cat.evenement") },
   ];
 
-  const articles = [0,1,2,3,4,5].map((i) => ({
-    id: `a${i}`, cat: ART_CATS[i], tag: t(`act.a${i}.tag`), date: t(`act.a${i}.date`),
-    time: t(`act.a${i}.time`), title: t(`act.a${i}.t`), excerpt: t(`act.a${i}.excerpt`),
-    bg: ART_BG[i], accent: ART_ACCENT[i], Icon: ART_ICONS[i],
-  }));
+  const articles = apiArticles
+    ? apiArticles.map((a) => ({
+        id: a.id, cat: a.category,
+        tag: categories.find(c => c.id === a.category)?.label ?? a.category,
+        date: a.published_at, time: `${a.read_time_minutes} min`,
+        title: a.title, excerpt: a.excerpt, image: a.image_url,
+        ...(CAT_VISUAL[a.category] ?? CAT_VISUAL.vie),
+      }))
+    : [0,1,2,3,4,5].map((i) => ({
+        id: `a${i}`, cat: ART_CATS[i], tag: t(`act.a${i}.tag`), date: t(`act.a${i}.date`),
+        time: t(`act.a${i}.time`), title: t(`act.a${i}.t`), excerpt: t(`act.a${i}.excerpt`),
+        bg: ART_BG[i], accent: ART_ACCENT[i], Icon: ART_ICONS[i], image: null as string | null,
+      }));
 
   const filteredArticles = articles.filter((art) => {
     let matchCat = activeCategory === "all" ? true : art.cat === activeCategory;
@@ -104,9 +134,15 @@ function ActualitesPage() {
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "repeat(3, 1fr)", gap: 20 }}>
               {filteredArticles.map((art) => (
                 <article key={art.id} style={{ background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 22, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                  <div style={{ height: 140, background: art.bg, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", flexShrink: 0 }}>
-                    <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 50% 50%, ${art.accent}18 0%, transparent 70%)` }} />
-                    <art.Icon size={44} strokeWidth={1.25} color={art.accent} style={{ position: "relative" }} />
+                  <div style={{ height: 140, background: art.image ? undefined : art.bg, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", flexShrink: 0, overflow: "hidden" }}>
+                    {art.image ? (
+                      <img src={art.image} alt={art.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+                    ) : (
+                      <>
+                        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 50% 50%, ${art.accent}18 0%, transparent 70%)` }} />
+                        <art.Icon size={44} strokeWidth={1.25} color={art.accent} style={{ position: "relative" }} />
+                      </>
+                    )}
                   </div>
                   <div style={{ padding: isMobile ? 18 : 24, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                     <div>
