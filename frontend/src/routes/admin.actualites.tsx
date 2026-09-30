@@ -69,6 +69,7 @@ function labelStyle(): React.CSSProperties {
 }
 
 function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,9 +80,9 @@ function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
     try {
       const res = await fetch(`${API}/api/news/admin/login`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) { setError("Mot de passe incorrect."); return; }
+      if (!res.ok) { setError("Email ou mot de passe incorrect."); return; }
       const data = await res.json();
       localStorage.setItem(TOKEN_KEY, data.token);
       onSuccess(data.token);
@@ -97,13 +98,15 @@ function LoginForm({ onSuccess }: { onSuccess: (token: string) => void }) {
       <form onSubmit={handleSubmit} style={{ background: PAL.paper, border: `1px solid ${PAL.line}`, borderRadius: 20, padding: "40px 36px", width: "100%", maxWidth: 380 }}>
         <div style={{ fontFamily: mono, fontSize: 11, color: PAL.primary, letterSpacing: ".14em", textTransform: "uppercase" as const, fontWeight: 600 }}>§ Admin</div>
         <h1 style={{ fontFamily: serif, fontWeight: 500, fontSize: 30, color: PAL.ink, margin: "10px 0 24px" }}>Actualités</h1>
+        <label style={labelStyle()}>Email</label>
+        <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)} style={inputStyle({ marginBottom: 14 })} />
         <label style={labelStyle()}>Mot de passe</label>
-        <input type="password" autoFocus value={password} onChange={e => setPassword(e.target.value)} style={inputStyle({ marginBottom: 14 })} />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle({ marginBottom: 14 })} />
         {error && <p style={{ fontFamily: sans, fontSize: 12, color: PAL.red, margin: "0 0 14px" }}>{error}</p>}
-        <button type="submit" disabled={loading || !password} style={{
+        <button type="submit" disabled={loading || !password || !email} style={{
           width: "100%", background: PAL.ink, color: PAL.paper, border: 0, borderRadius: 10,
           padding: "12px 0", fontFamily: sans, fontSize: 14, fontWeight: 600,
-          cursor: loading || !password ? "default" : "pointer", opacity: loading || !password ? 0.6 : 1,
+          cursor: loading || !password || !email ? "default" : "pointer", opacity: loading || !password || !email ? 0.6 : 1,
         }}>{loading ? "Connexion…" : "Se connecter"}</button>
       </form>
     </div>

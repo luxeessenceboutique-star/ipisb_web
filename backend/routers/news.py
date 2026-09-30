@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from utils.news_auth import issue_token, require_news_admin
+from utils.news_auth import login as news_admin_login, require_news_admin
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ def _client():
 
 
 class LoginRequest(BaseModel):
+    email: str
     password: str
 
 
@@ -74,7 +75,7 @@ async def list_news(lang: str = "fr", category: Optional[str] = None, limit: int
 
 @router.post("/news/admin/login")
 async def admin_login(req: LoginRequest):
-    token = issue_token(req.password)
+    token = news_admin_login(req.email, req.password)
     return {"token": token}
 
 

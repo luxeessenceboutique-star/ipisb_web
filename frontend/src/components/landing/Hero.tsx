@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Logo } from "@/components/Logo";
 import { CountUp } from "@/components/CountUp";
 import { useI18n } from "@/lib/i18n";
 import { useBreakpoint } from "@/lib/useBreakpoint";
@@ -35,9 +34,7 @@ export function Hero() {
 
   const pad = isMobile ? "64px 20px 48px" : isTablet ? "80px 32px 60px" : "100px 40px 80px";
 
-  // Background video is skipped on mobile — not rendered at all, so the
-  // browser never fetches it (saves data on the connections that need it most).
-  const showVideo = !isMobile;
+  const showVideo = true;
 
   return (
     <section style={{
@@ -68,12 +65,6 @@ export function Hero() {
             background: `linear-gradient(180deg, oklch(15% 0.03 175 / .82) 0%, oklch(15% 0.03 175 / .62) 55%, oklch(15% 0.03 175 / .78) 100%)`,
           }} />
         </>
-      )}
-
-      {!isMobile && !showVideo && (
-        <div style={{ position: "absolute", right: -120, top: 40, opacity: .05, pointerEvents: "none" }}>
-          <Logo size={540} />
-        </div>
       )}
 
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: pad, position: "relative" }}>
