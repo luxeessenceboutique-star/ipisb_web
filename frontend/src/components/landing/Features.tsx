@@ -143,7 +143,13 @@ export function Features() {
       transition: "opacity .8s",
     }}>
       <div ref={wrapperRef} style={{
-        position: scrollDriven ? "sticky" : "static",
+        // "relative" (not "static") on the non-scroll-driven/mobile path: a
+        // static wrapper doesn't establish a containing block, so its
+        // position:absolute children (header, wheel stage) would resolve
+        // their containing block up to the outer <section> instead — which
+        // has no overflow:hidden — letting the desktop wheel geometry escape
+        // this wrapper's clipping and overflow the viewport horizontally.
+        position: scrollDriven ? "sticky" : "relative",
         top: 0,
         height: stageHeight,
         overflow: "hidden",
