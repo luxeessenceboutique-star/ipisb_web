@@ -31,7 +31,7 @@ function ContactPage() {
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
 
   const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "100px 40px";
-  const faqs = [0,1,2,3].map((i) => ({ q: t(`con.faq.q${i}`), a: t(`con.faq.a${i}`) }));
+  const faqs = [0,1,2].map((i) => ({ q: t(`con.faq.q${i}`), a: t(`con.faq.a${i}`) }));
   const contactInfo: { label: string; val: string; sub: string; Icon: LucideIcon }[] = [
     { label: t("con.info.p1.label"),     val: "+212 632-822898",        sub: t("con.info.p1.sub"),     Icon: Phone },
     { label: t("con.info.p2.label"),     val: "+212 6 0713-1585",       sub: t("con.info.p2.sub"),     Icon: Smartphone },

@@ -15,7 +15,7 @@ const sans = '"Manrope", system-ui, sans-serif';
 const mono = '"JetBrains Mono", ui-monospace, monospace';
 
 const SOCIAL = [
-  { label: "Facebook",  href: "https://www.facebook.com/people/Ipisb-El-Jadida/pfbid02scTeG3UzbPMMWdG84Qs1QDdjrtifSbynTFUhSv8cF56wayGur9nGrWGXn4ujRTDfl/", icon: "f" },
+  { label: "Facebook",  href: "https://www.facebook.com/ipisbe", icon: "f" },
   { label: "Instagram", href: "https://www.instagram.com/ipisb_el_jadida/", icon: "ig" },
 ];
 

@@ -19,7 +19,7 @@ const PAL = {
 const serif = '"Cormorant Garamond", Georgia, serif';
 const sans  = '"Manrope", system-ui, sans-serif';
 
-const STAT_VALUES = ["1 200+", "5", "94 %", "12"];
+const STAT_VALUES = ["+200", "5", "94 %", "12"];
 
 export function Hero() {
   const { t, lang } = useI18n();

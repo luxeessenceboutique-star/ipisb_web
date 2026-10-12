@@ -3,13 +3,11 @@ IPISB_CONTEXT = """
 
 ## À propos de l'IPISB
 L'Institut Privé d'Innovation en Santé et Bien-être (IPISB) est un établissement
-d'enseignement supérieur privé basé à El Jadida, Maroc. Fondé en 2018, l'IPISB forme
+d'enseignement supérieur privé basé à El Jadida, Maroc. Fondé en 2024, l'IPISB forme
 la prochaine génération de professionnels de la santé avec une approche innovante qui
 allie rigueur scientifique, pratique hospitalière et technologie numérique.
 
-- Accréditation nationale et reconnaissance du Ministère de la Santé
 - 12 partenariats hospitaliers actifs (CHU El Jadida, cliniques régionales)
-- Plus de 1 200 diplômés depuis 2018
 - Taux de réussite : 94%
 - Plateforme numérique "IPISB Connect" — cours, examens, agenda, messagerie
 
@@ -32,10 +30,10 @@ allie rigueur scientifique, pratique hospitalière et technologie numérique.
 
 ### 2. Infirmier Auxiliaire
 - Durée : 2 ans (4 semestres)
-- Niveau requis : Baccalauréat obtenu ou diplôme d'Aide-Soignant
+- Niveau requis : Niveau Baccalauréat ou diplôme d'Aide-Soignant
 - Débouchés : hôpitaux, cliniques, maisons de retraite, soins de suite, aide à domicile
 - Spécificités : assistance à l'infirmier polyvalent, suivi des patients, soins de base, gestion du confort
-- Admission : Baccalauréat obtenu ou diplôme d'Aide-Soignant, sur dossier
+- Admission : Niveau Baccalauréat ou diplôme d'Aide-Soignant, sur dossier
 - Stages : Stages pratiques en établissements de soins
 
 ### 3. Aide-Soignant
