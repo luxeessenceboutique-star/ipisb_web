@@ -1,31 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageLayout } from "@/components/PageLayout";
-import { Hero } from "@/components/landing/Hero";
-import { Features } from "@/components/landing/Features";
-import { LanguageOptions } from "@/components/landing/LanguageOptions";
-import { ProgramsTeaser } from "@/components/landing/ProgramsTeaser";
-import { AboutTeaser } from "@/components/landing/AboutTeaser";
-import { TestimonialsTeaser } from "@/components/landing/TestimonialsTeaser";
-import { NewsTeaser } from "@/components/landing/NewsTeaser";
-import { Campuses } from "@/components/landing/Campuses";
-import { CtaBand } from "@/components/landing/CtaBand";
+import { NewHome } from "@/components/nd/NewHome";
 
 export const Route = createFileRoute("/")({
-  component: Index,
+  component: NewHome,
 });
-
-function Index() {
-  return (
-    <PageLayout>
-      <Hero />
-      <Features />
-      <LanguageOptions />
-      <ProgramsTeaser />
-      <AboutTeaser />
-      <TestimonialsTeaser />
-      <Campuses />
-      <NewsTeaser />
-      <CtaBand />
-    </PageLayout>
-  );
-}

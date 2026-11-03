@@ -6,16 +6,19 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:9000";
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const D = {
-  bg:     "oklch(8% 0.02 175)",
-  card:   "oklch(13% 0.025 175)",
-  card2:  "oklch(17% 0.03 175)",
-  border: "oklch(24% 0.025 175)",
-  teal:   "oklch(62% 0.085 170)",
-  teal2:  "oklch(72% 0.095 165)",
-  paper:  "oklch(97% 0.005 160)",
-  muted:  "oklch(64% 0.022 175)",
-  green:  "oklch(62% 0.13 145)",
-  red:    "oklch(60% 0.18 25)",
+  bg:       "#ffffff",
+  card:     "#ffffff",
+  card2:    "#f4faf9",
+  border:   "rgba(6,32,29,.10)",
+  ink:      "#06201d",
+  teal:     "#0b8a7d",
+  teal2:    "#12b5a2",
+  mint:     "#5fe3c4",
+  mintSoft: "#d6f7ef",
+  paper:    "#ffffff",
+  muted:    "#6b827e",
+  green:    "#1fa463",
+  red:      "#e5484d",
 };
 const sans  = '"Manrope", system-ui, sans-serif';
 const mono  = '"JetBrains Mono", ui-monospace, monospace';
@@ -154,61 +157,92 @@ function generateSessionId(): string {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function LangPicker({ onSelect }: { onSelect: (l: Lang) => void }) {
-  const [hover, setHover] = useState<Lang | null>(null);
+const CW_CSS = `
+.cw{--teal:${D.teal};--teal2:${D.teal2};--mint:${D.mint};--ink:${D.ink};--line:${D.border};--soft:${D.card2}}
+.cw *{box-sizing:border-box}
+@keyframes cw-in{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes cw-up{from{opacity:0;transform:translateY(14px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+@keyframes cw-rot{to{--cwa:360deg}}
+@property --cwa{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes cw-morph{0%,100%{border-radius:42% 58% 63% 37%/41% 44% 56% 59%;transform:rotate(0) scale(1)}33%{border-radius:63% 37% 38% 62%/55% 61% 39% 45%;transform:rotate(120deg) scale(1.05)}66%{border-radius:37% 63% 51% 49%/37% 35% 65% 63%;transform:rotate(240deg) scale(.96)}}
+@keyframes cw-breathe{50%{transform:scale(1.15);opacity:.7}}
+@keyframes cw-spin{to{transform:rotate(360deg)}}
+@keyframes cw-ping{0%{box-shadow:0 0 0 0 rgba(47,212,122,.6)}70%,100%{box-shadow:0 0 0 7px rgba(47,212,122,0)}}
+@keyframes cw-tp{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+@keyframes cw-shine{to{background-position:250% center}}
+.cw-panel{animation:cw-in .5s cubic-bezier(.22,1,.36,1)}
+.cw-av{position:relative;flex:none;border-radius:50%}
+.cw-av::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--cwa),#5fe3c4,#3fa9ff,#7b6cff,#5fe3c4);animation:cw-rot 3s linear infinite}
+.cw-av img{position:absolute;inset:2.5px;width:calc(100% - 5px);height:calc(100% - 5px);border-radius:50%;object-fit:cover;background:#fff}
+.cw-av.on::after{content:"";position:absolute;bottom:0;right:0;width:28%;height:28%;border-radius:50%;background:#2fd47a;border:2px solid #fff}
+.cw-orb{position:relative;width:96px;height:96px;margin:6px auto 18px}
+.cw-orb i{position:absolute;inset:0;border-radius:50%;mix-blend-mode:multiply;animation:cw-morph 8s ease-in-out infinite}
+.cw-orb i:nth-child(1){background:radial-gradient(circle at 30% 30%,#9ff0db,#12b5a2);animation-duration:7s}
+.cw-orb i:nth-child(2){background:radial-gradient(circle at 70% 40%,#bfe2ff,#3fa9ff);opacity:.7;animation-duration:9s;animation-direction:reverse}
+.cw-orb i:nth-child(3){background:radial-gradient(circle at 50% 80%,#d8d3ff,#7b6cff);opacity:.55;animation-duration:11s}
+.cw-orb b{position:absolute;inset:14% 22% 50% 18%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.85),transparent 70%);filter:blur(3px)}
+.cw-orb s{position:absolute;inset:-14px;border-radius:50%;border:1.5px dashed rgba(11,138,125,.25);animation:cw-spin 30s linear infinite}
+.cw-orb u{position:absolute;inset:-30%;border-radius:50%;background:radial-gradient(circle,rgba(95,227,196,.45),transparent 60%);filter:blur(14px);z-index:-1;animation:cw-breathe 4s ease-in-out infinite}
+.cw.thinking .cw-orb i{animation-duration:2.2s!important}
+.cw-grad{background:linear-gradient(100deg,#0b8a7d,#12b5a2 25%,#3fa9ff 55%,#7b6cff 75%,#0b8a7d);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:cw-shine 7s linear infinite}
+.cw-up{opacity:0;animation:cw-up .7s cubic-bezier(.22,1,.36,1) forwards}
+.cw-msg{animation:cw-up .5s cubic-bezier(.22,1,.36,1) both}
+.cw-sg{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border-radius:16px;background:#fff;border:1px solid var(--line);text-align:start;font:600 13px ${sans};color:var(--ink);cursor:pointer;transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s,border-color .3s}
+.cw-sg:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(11,138,125,.55);border-color:rgba(11,138,125,.35)}
+.cw-sg span.i{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;flex:none;color:#fff;background:linear-gradient(135deg,#0b8a7d,#12b5a2);transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.cw-sg:nth-child(2) span.i{background:linear-gradient(135deg,#3fa9ff,#7cc4ff)}
+.cw-sg:nth-child(3) span.i{background:linear-gradient(135deg,#7b6cff,#a89eff)}
+.cw-sg:hover span.i{transform:rotate(-10deg) scale(1.08)}
+.cw-lang{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border-radius:18px;background:#fff;border:1px solid var(--line);cursor:pointer;transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s,border-color .3s}
+.cw-lang:hover{transform:translateY(-4px);border-color:rgba(11,138,125,.4);box-shadow:0 20px 40px -24px rgba(11,138,125,.6)}
+.cw-box{position:relative;border-radius:22px;background:#fff;border:1px solid rgba(6,32,29,.16);box-shadow:0 14px 34px -22px rgba(6,32,29,.4);transition:box-shadow .4s}
+.cw-box::before{content:"";position:absolute;inset:-2px;border-radius:24px;padding:2px;background:conic-gradient(from var(--cwa),transparent 50%,#0b8a7d,#5fe3c4,#3fa9ff,transparent 90%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .4s;animation:cw-rot 3s linear infinite;pointer-events:none}
+.cw-box:focus-within::before{opacity:1}
+.cw-send{transition:transform .4s cubic-bezier(.22,1,.36,1),opacity .3s}
+.cw-send:not(:disabled):hover{transform:translateY(-2px) rotate(-8deg)}
+.cw-fab{transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.cw-fab:hover{transform:translateY(-3px)}
+.cw-fab::before{content:"";position:absolute;inset:-2px;border-radius:999px;padding:2px;background:conic-gradient(from var(--cwa),transparent 55%,#0b8a7d,#5fe3c4,transparent 85%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cw-rot 2.6s linear infinite}
+.cw-focus:focus-visible{outline:2px solid #12b5a2;outline-offset:2px}
+.cw-log::-webkit-scrollbar{width:6px}.cw-log::-webkit-scrollbar-thumb{background:rgba(6,32,29,.12);border-radius:6px}
+@media (prefers-reduced-motion: reduce){.cw *,.cw *::before,.cw *::after,.cw-fab::before{animation:none!important;transition:none!important}}
+`;
+
+function AyaAvatar({ size, online }: { size: number; online?: boolean }) {
   return (
-    <div style={{
-      flex: 1, display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      padding: "28px 20px", gap: 22,
-    }}>
-      <div style={{
-        width: 60, height: 60, borderRadius: 999,
-        background: `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 24, fontWeight: 800, color: D.paper, fontFamily: mono,
-        boxShadow: `0 0 28px oklch(62% 0.085 170 / .45)`,
-      }}>A</div>
-      <div style={{ textAlign: "center", lineHeight: 1.6 }}>
-        <div style={{ fontFamily: sans, fontSize: 16, fontWeight: 700, color: D.paper }}>
-          Aya — IPISB
+    <span className={`cw-av${online ? " on" : ""}`} style={{ width: size, height: size }}>
+      <img src="/aya-avatar.png" alt="Aya" />
+    </span>
+  );
+}
+
+function Orb() {
+  return <div className="cw-orb" aria-hidden="true"><u /><s /><i /><i /><i /><b /></div>;
+}
+
+function LangPicker({ onSelect }: { onSelect: (l: Lang) => void }) {
+  return (
+    <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "22px 20px", gap: 6 }}>
+      <div className="cw-up"><Orb /></div>
+      <div className="cw-up" style={{ animationDelay: ".08s", textAlign: "center", fontFamily: sans }}>
+        <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-.03em", color: D.ink, lineHeight: 1.15 }}>
+          Bonjour, je suis <span className="cw-grad">Aya</span>
         </div>
-        <div style={{ fontFamily: sans, fontSize: 12, color: D.muted, marginTop: 6 }}>
-          Choisissez votre langue
-        </div>
-        <div style={{ fontFamily: sans, fontSize: 12, color: D.muted }}>
-          Choose your language · اختر لغتك
-        </div>
+        <div style={{ fontSize: 13, color: D.muted, marginTop: 8 }}>Choisissez votre langue · Choose your language · اختر لغتك</div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: "100%", marginTop: 18 }}>
         {LANGS.map((l, i) => (
           <button
             key={l.code}
             autoFocus={i === 0}
             onClick={() => onSelect(l.code)}
-            onMouseEnter={() => setHover(l.code)}
-            onMouseLeave={() => setHover(null)}
             aria-label={`${l.label} — ${l.sub}`}
-            className="cw-focus"
-            style={{
-              background: hover === l.code ? "oklch(20% 0.035 175)" : D.card2,
-              border:     hover === l.code ? `1px solid ${D.teal}` : `1px solid ${D.border}`,
-              borderRadius: 14, padding: "16px 10px", cursor: "pointer",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
-              transition: "all .18s",
-              boxShadow: hover === l.code ? `0 0 18px oklch(62% 0.085 170 / .22)` : "none",
-            }}
+            className="cw-lang cw-focus cw-up"
+            style={{ animationDelay: `${.16 + i * .07}s` }}
           >
-            <span style={{ fontSize: 26 }}>{l.flag}</span>
-            <span style={{
-              fontFamily: sans, fontSize: 14, fontWeight: 700,
-              color: hover === l.code ? D.teal2 : D.paper,
-              direction: l.rtl ? "rtl" : "ltr", transition: "color .18s",
-            }}>{l.label}</span>
-            <span style={{
-              fontFamily: sans, fontSize: 11, color: D.muted,
-              direction: l.rtl ? "rtl" : "ltr",
-            }}>{l.sub}</span>
+            <span style={{ fontSize: 24 }}>{l.flag}</span>
+            <span style={{ fontFamily: sans, fontSize: 14, fontWeight: 800, color: D.ink, direction: l.rtl ? "rtl" : "ltr" }}>{l.label}</span>
+            <span style={{ fontFamily: sans, fontSize: 11, color: D.muted, direction: l.rtl ? "rtl" : "ltr" }}>{l.sub}</span>
           </button>
         ))}
       </div>
@@ -216,58 +250,31 @@ function LangPicker({ onSelect }: { onSelect: (l: Lang) => void }) {
   );
 }
 
-function Bubble({
-  msg, rtl, isWelcome,
-}: {
-  msg: Msg; rtl: boolean; isWelcome?: boolean;
-}) {
+function Bubble({ msg, rtl }: { msg: Msg; rtl: boolean; isWelcome?: boolean }) {
   const isBot = msg.role === "assistant";
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: isBot ? "flex-start" : "flex-end",
-      marginBottom: 12, alignItems: "flex-end", gap: 8,
+    <div className="cw-msg" style={{
+      display: "flex", flexDirection: isBot ? "row" : "row-reverse",
+      marginBottom: 14, alignItems: "flex-start", gap: 9,
     }}>
-      {isBot && (
-        <div style={{
-          width: 28, height: 28, borderRadius: 999, flexShrink: 0,
-          background: `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 13, fontWeight: 700, color: D.paper, fontFamily: mono,
-          boxShadow: `0 0 12px oklch(62% 0.085 170 / .3)`,
-          alignSelf: "flex-start",
-        }}>A</div>
-      )}
+      {isBot && <AyaAvatar size={30} />}
       <div style={{
-        maxWidth: isWelcome ? "88%" : "78%",
-        background: isBot
-          ? D.card2
-          : `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`,
-        border:       isBot ? `1px solid ${D.border}` : "none",
-        borderRadius: isBot ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-        overflow:     "hidden",
-        fontFamily:   sans, fontSize: 13, lineHeight: 1.6, color: D.paper,
-        boxShadow:    isBot ? "none" : `0 4px 16px oklch(62% 0.085 170 / .25)`,
-        direction:    rtl ? "rtl" : "ltr",
-        textAlign:    rtl ? "right" : "left",
+        maxWidth: "80%",
+        background: isBot ? "#fff" : D.ink,
+        border: isBot ? `1px solid ${D.border}` : "none",
+        borderRadius: isBot ? "6px 20px 20px 20px" : "20px 6px 20px 20px",
+        fontFamily: sans, fontSize: 13.5, lineHeight: 1.6,
+        color: isBot ? D.ink : "#fff",
+        boxShadow: isBot ? "0 10px 26px -20px rgba(6,32,29,.45)" : "0 12px 26px -16px rgba(6,32,29,.6)",
+        direction: rtl ? "rtl" : "ltr",
+        textAlign: rtl ? "right" : "left",
+        padding: "10px 15px",
+        overflowWrap: "break-word",
+        whiteSpace: isBot ? "normal" : "pre-wrap",
       }}>
-        {isWelcome && isBot && (
-          <img
-            src="/aya-banner.png"
-            alt="Aya IPISB"
-            style={{ width: "100%", display: "block", borderBottom: `1px solid ${D.border}` }}
-          />
-        )}
-        <div style={{
-          padding: "10px 14px",
-          overflowWrap: "break-word",
-          whiteSpace: isBot ? "normal" : "pre-wrap",
-        }}>
-          {isBot
-            ? <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
-            : msg.content
-          }
-        </div>
+        {isBot
+          ? <span className="cw-md" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
+          : msg.content}
       </div>
     </div>
   );
@@ -275,27 +282,20 @@ function Bubble({
 
 function TypingIndicator() {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginBottom: 12 }}>
+    <div className="cw-msg" style={{ display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 14 }}>
+      <AyaAvatar size={30} />
       <div style={{
-        width: 28, height: 28, borderRadius: 999, flexShrink: 0,
-        background: `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 13, fontWeight: 700, color: D.paper, fontFamily: mono,
-      }}>A</div>
-      <div style={{
-        background: D.card2, border: `1px solid ${D.border}`,
-        borderRadius: "4px 16px 16px 16px", padding: "12px 16px",
-        display: "flex", gap: 4, alignItems: "center",
+        background: "#fff", border: `1px solid ${D.border}`,
+        borderRadius: "6px 20px 20px 20px", padding: "14px 18px",
+        display: "flex", gap: 5, alignItems: "center",
       }}>
-        {[0, 1, 2].map(i => (
-          <span key={i} className="cw-anim" style={{
-            width: 6, height: 6, borderRadius: 999, background: D.teal,
-            display: "inline-block",
-            animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+        {[D.teal, "#3fa9ff", "#7b6cff"].map((c, i) => (
+          <span key={i} style={{
+            width: 7, height: 7, borderRadius: 999, background: c, display: "inline-block",
+            animation: `cw-tp 1.2s ease-in-out ${i * 0.15}s infinite`,
           }} />
         ))}
       </div>
-      <style>{`@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}`}</style>
     </div>
   );
 }
@@ -320,78 +320,34 @@ function ReviewCard({
   };
 
   return (
-    <div style={{
-      background:   D.card2,
-      border:       `1px solid ${D.teal}`,
-      borderRadius: 14,
-      padding:      14,
-      marginBottom: 12,
-      marginLeft:   36,
-      fontFamily:   sans,
-      fontSize:     12,
-      color:        D.paper,
+    <div className="cw-msg" style={{
+      background: `linear-gradient(140deg, ${D.ink}, #0d3a35)`,
+      borderRadius: 20, padding: 16, marginBottom: 14, marginInlineStart: 39,
+      fontFamily: sans, fontSize: 12.5, color: "#fff",
+      boxShadow: "0 20px 40px -24px rgba(6,32,29,.7)",
     }}>
-      <div style={{ fontWeight: 700, fontSize: 13, color: D.teal2, marginBottom: 10 }}>
+      <div style={{ fontWeight: 800, fontSize: 14, color: D.mint, marginBottom: 12 }}>
         Récapitulatif de votre dossier
       </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ color: D.muted, fontSize: 10.5, fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          Informations personnelles
-        </div>
+      <div style={{ marginBottom: 12, display: "grid", gap: 6 }}>
         {Object.entries(slotLabels).map(([key, label]) =>
           slots[key] ? (
-            <div key={key} style={{ display: "flex", gap: 8, marginBottom: 3 }}>
-              <span style={{ color: D.muted, minWidth: 110 }}>{label}</span>
-              <span style={{ color: D.paper, fontWeight: 600 }}>{slots[key]}</span>
+            <div key={key} style={{ display: "flex", gap: 8, padding: "7px 10px", borderRadius: 10, background: "rgba(255,255,255,.07)" }}>
+              <span style={{ color: "#a8c2bd", minWidth: 110 }}>{label}</span>
+              <span style={{ fontWeight: 700 }}>{slots[key]}</span>
             </div>
           ) : null
         )}
       </div>
-
       <div style={{ display: "flex", gap: 8 }}>
-        <button
-          onClick={onConfirm}
-          className="cw-focus"
-          style={{
-            flex:         1,
-            background:   D.green,
-            border:       "none",
-            borderRadius: 8,
-            padding:      "8px 12px",
-            cursor:       "pointer",
-            fontFamily:   sans,
-            fontSize:     13,
-            fontWeight:   700,
-            color:        D.paper,
-            transition:   "opacity .2s",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-        >
-          Confirmer ✓
-        </button>
-        <button
-          onClick={onCorrect}
-          className="cw-focus"
-          style={{
-            flex:         1,
-            background:   "transparent",
-            border:       `1px solid ${D.red}`,
-            borderRadius: 8,
-            padding:      "8px 12px",
-            cursor:       "pointer",
-            fontFamily:   sans,
-            fontSize:     13,
-            fontWeight:   700,
-            color:        D.red,
-            transition:   "opacity .2s",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "0.75")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-        >
-          Corriger ✗
-        </button>
+        <button onClick={onConfirm} className="cw-focus cw-send" style={{
+          flex: 1, background: D.mint, border: "none", borderRadius: 12, padding: "10px 12px",
+          cursor: "pointer", fontFamily: sans, fontSize: 13, fontWeight: 800, color: D.ink,
+        }}>Confirmer ✓</button>
+        <button onClick={onCorrect} className="cw-focus cw-send" style={{
+          flex: 1, background: "transparent", border: "1px solid rgba(255,255,255,.3)", borderRadius: 12,
+          padding: "10px 12px", cursor: "pointer", fontFamily: sans, fontSize: 13, fontWeight: 700, color: "#fff",
+        }}>Corriger ✗</button>
       </div>
     </div>
   );
@@ -401,59 +357,21 @@ function ReviewCard({
 function StageProgress({ stage }: { stage: Stage }) {
   const label = STAGE_LABELS[stage];
   if (!label) return null;
-
-  const stepMap: Record<Stage, number> = {
-    chat:         0,
-    collect_info: 1,
-    review:       2,
-    confirmed:    3,
-  };
+  const stepMap: Record<Stage, number> = { chat: 0, collect_info: 1, review: 2, confirmed: 3 };
   const step  = stepMap[stage] ?? 0;
   const total = 3;
   const pct   = (step / total) * 100;
-
   return (
-    <div style={{
-      padding:    "6px 14px 0",
-      flexShrink: 0,
-    }}>
-      <div style={{
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: "space-between",
-        marginBottom:   3,
-      }}>
-        <span style={{
-          fontFamily: sans, fontSize: 11, fontWeight: 600,
-          color: stage === "confirmed" ? D.green : D.teal2,
-        }}>
-          {label}
-        </span>
-        <span style={{ fontFamily: sans, fontSize: 11, color: D.muted }}>
-          {step}/{total}
-        </span>
+    <div style={{ padding: "0 16px 10px", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+        <span style={{ fontFamily: sans, fontSize: 11.5, fontWeight: 700, color: stage === "confirmed" ? D.green : D.teal }}>{label}</span>
+        <span style={{ fontFamily: mono, fontSize: 11, color: D.muted }}>{step}/{total}</span>
       </div>
-      <div
-        role="progressbar"
-        aria-valuenow={step}
-        aria-valuemin={0}
-        aria-valuemax={total}
-        aria-label={label}
-        style={{
-          height:       3,
-          background:   D.border,
-          borderRadius: 999,
-          overflow:     "hidden",
-          marginBottom: 6,
-        }}>
+      <div role="progressbar" aria-valuenow={step} aria-valuemin={0} aria-valuemax={total} aria-label={label}
+        style={{ height: 5, background: D.card2, borderRadius: 999, overflow: "hidden" }}>
         <div style={{
-          height:     "100%",
-          width:      `${pct}%`,
-          background: stage === "confirmed"
-            ? D.green
-            : `linear-gradient(90deg, ${D.teal} 0%, ${D.teal2} 100%)`,
-          borderRadius: 999,
-          transition:   "width .4s ease",
+          height: "100%", width: `${pct}%`, borderRadius: 999, transition: "width .6s cubic-bezier(.22,1,.36,1)",
+          background: stage === "confirmed" ? D.green : `linear-gradient(90deg, ${D.teal}, ${D.mint})`,
         }} />
       </div>
     </div>
@@ -509,7 +427,9 @@ export function ChatWidget() {
 
   // ── Auto-scroll ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Keep the welcome screen (orb + greeting) in view; follow the thread after that
+    if (messages.length <= 1) return;
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, streaming, reviewShown]);
 
   // ── Focus on open ───────────────────────────────────────────────────────────
@@ -645,6 +565,13 @@ export function ChatWidget() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   }
 
+  // ── Open from anywhere: window.dispatchEvent(new CustomEvent("aya:open")) ──
+  useEffect(() => {
+    const fn = () => setOpen(true);
+    window.addEventListener("aya:open", fn);
+    return () => window.removeEventListener("aya:open", fn);
+  }, []);
+
   // ── Escape closes the widget ────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
@@ -660,63 +587,50 @@ export function ChatWidget() {
     messages.length > 0 &&
     messages[messages.length - 1]?.role === "assistant";
 
+
+  const isWelcome = messages.length <= 1 && stage === "chat";
+  const HELLO: Record<Lang, [string, string]> = {
+    fr: ["Comment puis-je ", "vous aider ?"], en: ["How can I ", "help you?"],
+    ar: ["كيف يمكنني ", "مساعدتك؟"], darija: ["Kifach nqder ", "n3awnek?"],
+  };
+  const SUG_ICONS = [
+    <svg key="a" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M22 10 12 5 2 10l10 5 10-5z" /><path d="M6 12v5c3 2 9 2 12 0v-5" /></svg>,
+    <svg key="b" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
+    <svg key="c" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" /></svg>,
+  ];
+
   return (
-    <>
-      <style>{`
-        @keyframes chat-in{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
-        @keyframes glow-pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        .cw-focus:focus-visible{outline:2px solid ${D.teal2};outline-offset:2px}
-        .cw-input:focus{border-color:${D.teal} !important}
-        @media (prefers-reduced-motion: reduce){
-          .cw-anim{animation:none !important;transition:none !important}
-        }
-      `}</style>
+    <div className={`cw${streaming ? " thinking" : ""}`}>
+      <style>{CW_CSS}</style>
 
       {open && (
         <div
           role="dialog"
           aria-label="Chat avec Aya — Conseillère IPISB"
-          className="cw-anim"
+          className="cw-panel"
           style={{
             position: "fixed", zIndex: 1000,
             ...(isMobile
               ? { left: 8, right: 8, bottom: 84, top: 12, width: "auto", height: "auto" }
-              : { bottom: 88, right: 24, width: 380, height: 560, maxHeight: "calc(100vh - 112px)" }),
-            background: D.bg,
+              : { bottom: 92, right: 24, width: 400, height: 640, maxHeight: "calc(100vh - 116px)" }),
+            background: `radial-gradient(420px 240px at 100% 0%, ${D.mintSoft}, transparent 70%), radial-gradient(360px 260px at 0% 100%, #eaf3ff, transparent 70%), #fff`,
             border: `1px solid ${D.border}`,
-            borderRadius: 20,
+            borderRadius: 28,
             display: "flex", flexDirection: "column",
-            boxShadow: "0 24px 80px oklch(0% 0 0 / .55), 0 0 0 1px oklch(100% 0 0 / .04)",
+            boxShadow: "0 40px 100px -30px rgba(6,32,29,.45), 0 12px 30px -18px rgba(11,138,125,.35)",
             overflow: "hidden",
-            animation: "chat-in .25s cubic-bezier(.4,0,.2,1)",
           }}>
 
           {/* Header */}
-          <div style={{
-            background: D.card,
-            borderBottom: `1px solid ${D.border}`,
-            flexShrink: 0,
-          }}>
-            <div style={{
-              padding: "14px 16px",
-              display: "flex", alignItems: "center", gap: 10,
-            }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 999,
-                background: `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 16, fontWeight: 800, color: D.paper, fontFamily: mono,
-                flexShrink: 0, boxShadow: `0 0 16px oklch(62% 0.085 170 / .35)`,
-              }}>A</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: sans, fontSize: 14, fontWeight: 700, color: D.paper }}>Aya</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
-                  <span className="cw-anim" style={{
-                    width: 6, height: 6, borderRadius: 999, background: D.teal,
-                    display: "inline-block", animation: "glow-pulse 2s infinite",
-                  }} />
-                  <span style={{ fontFamily: sans, fontSize: 11, color: D.muted }}>
-                    Conseillère IPISB · En ligne
+          <div style={{ background: "rgba(255,255,255,.75)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
+            <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+              <AyaAvatar size={44} online />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: sans, fontSize: 15.5, fontWeight: 800, color: D.ink }}>Aya · IPISB</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: 999, background: "#2fd47a", display: "inline-block", animation: "cw-ping 1.6s infinite" }} />
+                  <span style={{ fontFamily: sans, fontSize: 11.5, fontWeight: 600, color: D.teal }}>
+                    {streaming ? "Aya écrit…" : "Conseillère IPISB · En ligne"}
                   </span>
                 </div>
               </div>
@@ -728,26 +642,22 @@ export function ChatWidget() {
                   aria-label="Changer de langue"
                   className="cw-focus"
                   style={{
-                    background: D.card2, border: `1px solid ${D.border}`,
-                    borderRadius: 8, padding: "3px 9px", cursor: "pointer",
-                    color: D.muted, fontFamily: sans, fontSize: 12,
+                    background: D.card2, border: `1px solid ${D.border}`, borderRadius: 12,
+                    padding: "6px 10px", cursor: "pointer", color: D.muted, fontFamily: sans, fontSize: 13,
                     display: "flex", alignItems: "center", gap: 4,
-                    transition: "border-color .15s",
                   }}
                 >
                   {LANGS.find(l => l.code === lang)?.flag}
-                  <ChevronDown size={11} color={D.muted} />
+                  <ChevronDown size={12} color={D.muted} />
                 </button>
               )}
 
               <button onClick={() => setOpen(false)} aria-label="Fermer le chat" className="cw-focus" style={{
-                background: "transparent", border: 0, cursor: "pointer",
-                color: D.muted, padding: "4px 6px", borderRadius: 6,
+                background: D.card2, border: 0, cursor: "pointer", color: D.ink,
+                width: 34, height: 34, borderRadius: 12,
                 display: "flex", alignItems: "center", justifyContent: "center",
-              }}><X size={16} strokeWidth={2} /></button>
+              }}><X size={16} strokeWidth={2.2} /></button>
             </div>
-
-            {/* Stage progress bar */}
             {lang && <StageProgress stage={stage} />}
           </div>
 
@@ -756,118 +666,96 @@ export function ChatWidget() {
             <LangPicker onSelect={handleLangSelect} />
           ) : (
             <>
-              {/* Messages */}
               <div
                 role="log"
                 aria-live="polite"
                 aria-busy={streaming}
                 aria-label="Messages"
+                className="cw-log"
                 style={{ flex: 1, overflowY: "auto", padding: "16px 14px", scrollbarWidth: "thin" }}
               >
+                {isWelcome && (
+                  <div style={{ textAlign: "center", padding: "6px 0 16px", direction: rtl ? "rtl" : "ltr" }}>
+                    <div className="cw-up"><Orb /></div>
+                    <div className="cw-up" style={{ animationDelay: ".08s", fontFamily: sans, fontSize: 22, fontWeight: 800, letterSpacing: "-.03em", color: D.ink, lineHeight: 1.2 }}>
+                      {HELLO[lang][0]}<span className="cw-grad">{HELLO[lang][1]}</span>
+                    </div>
+                  </div>
+                )}
+
                 {messages.map((m, i) => (
-                  <Bubble
-                    key={i}
-                    msg={m}
-                    rtl={rtl}
-                    isWelcome={i === 0}
-                  />
+                  <Bubble key={i} msg={m} rtl={rtl} isWelcome={i === 0} />
                 ))}
 
-                {/* Typing indicator */}
                 {streaming && messages[messages.length - 1]?.content === "" && <TypingIndicator />}
 
-                {/* Review card — appears when stage is review */}
                 {showReviewCard && (
-                  <ReviewCard
-                    slots={slots}
-                    onConfirm={handleConfirm}
-                    onCorrect={handleCorrect}
-                  />
+                  <ReviewCard slots={slots} onConfirm={handleConfirm} onCorrect={handleCorrect} />
+                )}
+
+                {isWelcome && (
+                  <div style={{ display: "grid", gap: 8, marginTop: 4, direction: rtl ? "rtl" : "ltr" }}>
+                    {SUGGESTIONS[lang].map((s, i) => (
+                      <button key={s} onClick={() => send(s)} className="cw-sg cw-focus cw-up" style={{ animationDelay: `${.25 + i * .08}s` }}>
+                        <span className="i">{SUG_ICONS[i % 3]}</span>
+                        <span style={{ flex: 1 }}>{s}</span>
+                        <span style={{ color: D.muted, transform: rtl ? "scaleX(-1)" : undefined }}>→</span>
+                      </button>
+                    ))}
+                  </div>
                 )}
 
                 <div ref={bottomRef} />
               </div>
 
-              {/* Quick suggestions (first message only) */}
-              {messages.length <= 1 && stage === "chat" && (
-                <div style={{
-                  padding: "0 14px 10px",
-                  display: "flex", gap: 6, flexWrap: "wrap" as const,
-                  justifyContent: rtl ? "flex-end" : "flex-start",
-                }}>
-                  {SUGGESTIONS[lang].map(s => (
-                    <button key={s} onClick={() => send(s)} className="cw-focus" style={{
-                      background: D.card2, border: `1px solid ${D.border}`,
-                      color: D.teal2, borderRadius: 999, padding: "5px 11px",
-                      fontFamily: sans, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                      direction: rtl ? "rtl" : "ltr",
-                      transition: "border-color .15s, color .15s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = D.teal; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = D.border; }}
-                    >{s}</button>
-                  ))}
-                </div>
-              )}
-
-              {/* Text input — hidden only while the review card awaits a choice.
-                  Shown again after Confirmer/Corriger (reviewShown) so the user
-                  is never left without a way to type if the stage stalls. */}
               {(stage !== "review" || reviewShown) && (
-                <div style={{
-                  padding: "10px 12px", borderTop: `1px solid ${D.border}`,
-                  background: D.card, display: "flex", gap: 8,
-                  alignItems: "flex-end", flexShrink: 0,
-                }}>
-                  <textarea
-                    ref={inputRef}
-                    value={input}
-                    onChange={e => {
-                      setInput(e.target.value);
-                      // Auto-grow up to maxHeight
-                      e.target.style.height = "auto";
-                      e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
-                    }}
-                    onKeyDown={handleKey}
-                    placeholder={PLACEHOLDER[lang]}
-                    aria-label={PLACEHOLDER[lang]}
-                    rows={1}
-                    dir={rtl ? "rtl" : "ltr"}
-                    className="cw-input"
-                    style={{
-                      flex: 1, background: D.card2, border: `1px solid ${D.border}`,
-                      borderRadius: 12, padding: "9px 12px",
-                      color: D.paper, fontFamily: sans, fontSize: 13,
-                      resize: "none", outline: "none",
-                      lineHeight: 1.4, maxHeight: 100, overflowY: "auto",
-                      textAlign: rtl ? "right" : "left",
-                      transition: "border-color .15s",
-                    }}
-                  />
-                  <button
-                    onClick={() => send()}
-                    disabled={!input.trim() || streaming}
-                    aria-label="Envoyer le message"
-                    className="cw-focus"
-                    style={{
-                      width: 36, height: 36, borderRadius: 999, flexShrink: 0,
-                      background: input.trim() && !streaming
-                        ? `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`
-                        : D.border,
-                      border: 0, cursor: input.trim() && !streaming ? "pointer" : "default",
-                      color: D.paper, fontSize: 16, transition: "background .2s",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  ><Send size={15} strokeWidth={2} /></button>
+                <div style={{ padding: "10px 12px 12px", flexShrink: 0 }}>
+                  <div className="cw-box" style={{ display: "flex", alignItems: "flex-end", gap: 8, padding: "6px 6px 6px 14px" }}>
+                    <textarea
+                      ref={inputRef}
+                      value={input}
+                      onChange={e => {
+                        setInput(e.target.value);
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${Math.min(e.target.scrollHeight, 110)}px`;
+                      }}
+                      onKeyDown={handleKey}
+                      placeholder={PLACEHOLDER[lang]}
+                      aria-label={PLACEHOLDER[lang]}
+                      rows={1}
+                      dir={rtl ? "rtl" : "ltr"}
+                      style={{
+                        flex: 1, background: "transparent", border: 0, padding: "9px 0",
+                        color: D.ink, fontFamily: sans, fontSize: 14,
+                        resize: "none", outline: "none", lineHeight: 1.45, maxHeight: 110, overflowY: "auto",
+                        textAlign: rtl ? "right" : "left",
+                      }}
+                    />
+                    <button
+                      onClick={() => send()}
+                      disabled={!input.trim() || streaming}
+                      aria-label="Envoyer le message"
+                      className="cw-focus cw-send"
+                      style={{
+                        width: 40, height: 40, borderRadius: 14, flexShrink: 0,
+                        background: `linear-gradient(135deg, ${D.teal}, ${D.teal2})`,
+                        boxShadow: "0 10px 22px -10px rgba(11,138,125,.7)",
+                        opacity: input.trim() && !streaming ? 1 : .35,
+                        border: 0, cursor: input.trim() && !streaming ? "pointer" : "default",
+                        color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    ><Send size={16} strokeWidth={2.2} style={{ transform: rtl ? "scaleX(-1)" : undefined }} /></button>
+                  </div>
+                  <div style={{ textAlign: "center", fontFamily: sans, fontSize: 10.5, color: D.muted, marginTop: 7 }}>
+                    Aya peut se tromper — vérifiez les informations importantes auprès de l'administration.
+                  </div>
                 </div>
               )}
 
-              {/* Review stage hint */}
               {stage === "review" && !reviewShown && (
                 <div style={{
-                  padding: "8px 14px", borderTop: `1px solid ${D.border}`,
-                  background: D.card, flexShrink: 0,
-                  fontFamily: sans, fontSize: 11, color: D.muted, textAlign: "center",
+                  padding: "10px 14px", borderTop: `1px solid ${D.border}`, flexShrink: 0,
+                  fontFamily: sans, fontSize: 11.5, color: D.muted, textAlign: "center",
                 }}>
                   Vérifiez vos informations et cliquez sur Confirmer ou Corriger
                 </div>
@@ -884,31 +772,32 @@ export function ChatWidget() {
           ? "Fermer le chat"
           : `Ouvrir le chat avec Aya${unread > 0 ? ` — ${unread} message(s) non lu(s)` : ""}`}
         aria-expanded={open}
-        className="cw-focus"
-        style={{
-          position: "fixed", bottom: 24, right: 24, zIndex: open ? 1000 : 50,
-          width: 56, height: 56, borderRadius: 999, border: 0, cursor: "pointer",
-          background: `linear-gradient(135deg, ${D.teal} 0%, oklch(52% 0.09 175) 100%)`,
-          color: D.paper, fontSize: 22,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: `0 4px 24px oklch(62% 0.085 170 / .45)`,
-          transition: "transform .2s, box-shadow .2s",
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+        className="cw-focus cw-fab"
         title="Chat avec Aya — Conseillère IPISB"
+        style={{
+          position: "fixed", bottom: 22, right: 22, zIndex: open ? 1000 : 50,
+          display: "flex", alignItems: "center", gap: 10,
+          padding: open || isMobile ? 6 : "6px 18px 6px 6px",
+          borderRadius: 999, border: `1px solid ${D.border}`, cursor: "pointer",
+          background: "#fff", color: D.ink,
+          boxShadow: "0 20px 50px -15px rgba(6,32,29,.4)",
+          fontFamily: sans, fontSize: 13.5, fontWeight: 700,
+        }}
       >
-        {open ? <X size={20} strokeWidth={2} /> : <MessageCircle size={22} strokeWidth={1.75} />}
+        {open
+          ? <span style={{ width: 44, height: 44, borderRadius: 999, display: "grid", placeItems: "center", background: D.ink, color: "#fff" }}><X size={20} strokeWidth={2} /></span>
+          : <AyaAvatar size={44} online />}
+        {!open && !isMobile && <span>Besoin d'aide ? Demandez à Aya</span>}
         {unread > 0 && !open && (
           <span aria-hidden="true" style={{
             position: "absolute", top: -4, right: -4,
-            width: 18, height: 18, borderRadius: 999,
-            background: "oklch(64% 0.18 25)", color: D.paper,
-            fontSize: 10, fontWeight: 700, fontFamily: mono,
+            width: 20, height: 20, borderRadius: 999,
+            background: D.red, color: "#fff",
+            fontSize: 10.5, fontWeight: 700, fontFamily: mono,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>{unread}</span>
         )}
       </button>
-    </>
+    </div>
   );
 }
