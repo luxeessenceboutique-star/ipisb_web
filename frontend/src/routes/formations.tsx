@@ -1,42 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PageLayout } from "@/components/PageLayout";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Logo } from "@/components/Logo";
 import { useI18n } from "@/lib/i18n";
-import { useBreakpoint } from "@/lib/useBreakpoint";
+import { NdLayout, PageHero, SecHead, NdCta, Arrow, clean } from "@/components/nd/NdLayout";
 
 export const Route = createFileRoute("/formations")({
   component: FormationsPage,
 });
 
-const PAL = {
-  ink:    "oklch(22% 0.025 175)",
-  text:   "oklch(34% 0.03 180)",
-  muted:  "oklch(48% 0.02 180)",
-  primary:"oklch(48% 0.085 175)",
-  mid:    "oklch(62% 0.085 170)",
-  cream:  "oklch(97% 0.012 90)",
-  paper:  "oklch(99% 0.005 160)",
-  line:   "oklch(88% 0.015 170)",
-  teal:   "oklch(62% 0.085 170)",
-};
-const serif = '"Cormorant Garamond", Georgia, serif';
-const sans  = '"Manrope", system-ui, sans-serif';
-const mono  = '"JetBrains Mono", ui-monospace, monospace';
-
-const PROG_COLORS = [PAL.primary, PAL.mid, PAL.teal];
 const PROG_IDS    = ["polyvalent", "auxiliaire", "aide-soignant"];
 const PROG_CATS   = ["licence-soins", "licence-soins", "soins"];
 const PROG_IMAGES = ["/images/program-polyvalent.jpg", "/images/program-auxiliaire.jpg", "/images/program-aide-soignant.jpg"];
 
 function FormationsPage() {
   const { t } = useI18n();
-  const { isMobile, isTablet } = useBreakpoint();
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const pad = isMobile ? "64px 20px" : isTablet ? "80px 32px" : "100px 40px";
 
   const categories = [
     { id: "all",     label: t("fp.cat.all") },
@@ -49,150 +28,99 @@ function FormationsPage() {
     t: t(`fp.p${i}.t`), d: t(`fp.p${i}.d`), dur: t(`fp.p${i}.dur`),
     req: t(`fp.p${i}.req`), hours: t(`fp.p${i}.hours`), obj: t(`fp.p${i}.obj`),
     careers: [t(`fp.p${i}.c1`), t(`fp.p${i}.c2`), t(`fp.p${i}.c3`), t(`fp.p${i}.c4`)],
-    color: PROG_COLORS[i], img: PROG_IMAGES[i],
+    img: PROG_IMAGES[i],
   }));
 
-  const comparisons = [0, 1, 2].map((i) => ({
-    t: t(`fp.p${i}.t`), def: t(`fp.p${i}.def`), who: t(`fp.p${i}.who`), color: PROG_COLORS[i],
-  }));
+  const comparisons = [0, 1, 2].map((i) => ({ t: t(`fp.p${i}.t`), def: t(`fp.p${i}.def`), who: t(`fp.p${i}.who`) }));
 
+  const q = searchQuery.toLowerCase();
   const filteredPrograms = programs.filter((p) => {
     let matchFilter = true;
     if (activeFilter === "licence") matchFilter = p.cat.includes("licence");
     else if (activeFilter === "soins") matchFilter = p.cat.includes("soins");
-    const matchSearch = p.t.toLowerCase().includes(searchQuery.toLowerCase()) || p.d.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchFilter && matchSearch;
+    return matchFilter && (p.t.toLowerCase().includes(q) || p.d.toLowerCase().includes(q));
   });
 
   return (
-    <PageLayout>
-      <div style={{ background: PAL.paper, minHeight: "100vh" }}>
+    <NdLayout deps={[activeFilter, searchQuery, expandedId]}>
+      <PageHero eyebrow={t("fp.eyebrow")} a={t("fp.h1a")} b={t("fp.h1b")} body={t("fp.body")} img="/images/program-polyvalent.jpg" />
 
-        <section style={{ padding: isMobile ? "64px 20px 40px" : isTablet ? "80px 32px 48px" : "100px 40px 60px", maxWidth: 1280, margin: "0 auto" }}>
-          <div style={{ fontFamily: mono, fontSize: 11, color: PAL.primary, letterSpacing: ".14em", textTransform: "uppercase" as const, fontWeight: 600 }}>{t("fp.eyebrow")}</div>
-          <h1 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(42px, 6vw, 80px)", lineHeight: .98, color: PAL.ink, margin: "14px 0 0", letterSpacing: "-.02em" }}>
-            {t("fp.h1a")}<br /><em style={{ fontStyle: "italic", color: PAL.primary }}>{t("fp.h1b")}</em>
-          </h1>
-          <p style={{ fontFamily: sans, fontSize: isMobile ? 15 : 18, color: PAL.text, lineHeight: 1.6, maxWidth: 680, marginTop: 20 }}>{t("fp.body")}</p>
-        </section>
-
-        {/* Understanding the professions — definitions to help visitors tell the 3 paths apart */}
-        <section style={{ padding: isMobile ? "0 20px 48px" : isTablet ? "0 32px 60px" : "0 40px 80px", maxWidth: 1280, margin: "0 auto" }}>
-          <div style={{ background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 24, padding: isMobile ? "28px 20px" : "48px 56px" }}>
-            <div style={{ fontFamily: mono, fontSize: 11, color: PAL.primary, letterSpacing: ".14em", textTransform: "uppercase" as const, fontWeight: 600 }}>{t("fp.compare.eyebrow")}</div>
-            <h2 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(28px, 3.5vw, 44px)", color: PAL.ink, margin: "12px 0 0", letterSpacing: "-.02em", maxWidth: 720 }}>
-              {t("fp.compare.h2a")} <em style={{ fontStyle: "italic", color: PAL.primary }}>{t("fp.compare.h2b")}</em>
-            </h2>
-            <p style={{ fontFamily: sans, fontSize: isMobile ? 14 : 15, color: PAL.text, lineHeight: 1.65, maxWidth: 760, marginTop: 16 }}>{t("fp.compare.body")}</p>
-
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16, marginTop: 32 }}>
+      {/* Comprendre les métiers */}
+      <section className="sec tight">
+        <div className="wrap">
+          <div className="panel-soft">
+            <SecHead eyebrow={t("fp.compare.eyebrow")} a={t("fp.compare.h2a")} b={t("fp.compare.h2b")} body={t("fp.compare.body")} />
+            <div className="grid3">
               {comparisons.map((c, i) => (
-                <div key={i} style={{ background: PAL.paper, border: `1px solid ${PAL.line}`, borderRadius: 18, padding: isMobile ? "20px 18px" : "24px 22px" }}>
-                  <div style={{ width: 28, height: 3, background: c.color, borderRadius: 2, marginBottom: 14 }} />
-                  <h3 style={{ fontFamily: serif, fontWeight: 500, fontSize: 20, color: PAL.ink, margin: "0 0 10px" }}>{c.t}</h3>
-                  <p style={{ fontFamily: sans, fontSize: 13, lineHeight: 1.6, color: PAL.text, margin: "0 0 12px" }}>{c.def}</p>
-                  <p style={{ fontFamily: sans, fontSize: 12.5, lineHeight: 1.6, color: PAL.muted, margin: 0, fontStyle: "italic" as const }}>{c.who}</p>
+                <div key={i} className={`ccard tilt rv rv-d${i}`}>
+                  <span className="cn">/0{i + 1}</span>
+                  <h3>{c.t}</h3>
+                  <p>{c.def}</p>
+                  <p className="who">{c.who}</p>
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section style={{ padding: isMobile ? "0 20px" : isTablet ? "0 32px" : "0 40px", maxWidth: 1280, margin: "0 auto", marginBottom: 32 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 14, background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 20, padding: isMobile ? "16px 16px" : "20px 24px" }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+      {/* Filtres + programmes */}
+      <section className="sec" style={{ paddingTop: 20 }}>
+        <div className="wrap">
+          <div className="fbar rv" style={{ marginBottom: 34 }}>
+            <div className="fchips">
               {categories.map((cat) => (
-                <button key={cat.id} onClick={() => setActiveFilter(cat.id)} style={{
-                  background: activeFilter === cat.id ? PAL.ink : "transparent",
-                  color: activeFilter === cat.id ? PAL.paper : PAL.ink,
-                  border: activeFilter === cat.id ? "1px solid transparent" : `1px solid ${PAL.line}`,
-                  borderRadius: 99, padding: isMobile ? "6px 14px" : "8px 18px",
-                  fontFamily: sans, fontSize: isMobile ? 12 : 13, fontWeight: activeFilter === cat.id ? 600 : 500,
-                  cursor: "pointer", transition: "all .2s",
-                }}>{cat.label}</button>
+                <button key={cat.id} className={`fchip${activeFilter === cat.id ? " on" : ""}`} onClick={() => setActiveFilter(cat.id)}>{cat.label}</button>
               ))}
             </div>
-            <input type="text" placeholder={t("fp.search")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{
-              width: "100%", maxWidth: isMobile ? "100%" : 280,
-              padding: "10px 16px", borderRadius: 99, border: `1px solid ${PAL.line}`,
-              fontFamily: sans, fontSize: 13, outline: "none", color: PAL.ink, background: PAL.paper,
-            }} />
+            <label className="fsearch">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+              <input type="text" placeholder={t("fp.search")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            </label>
           </div>
-        </section>
 
-        <section style={{ padding: isMobile ? "0 20px 64px" : isTablet ? "0 32px 80px" : "0 40px 100px", maxWidth: 1280, margin: "0 auto" }}>
           {filteredPrograms.length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20 }}>
-              {filteredPrograms.map((p) => {
+            <div className="grid3">
+              {filteredPrograms.map((p, i) => {
                 const isExpanded = expandedId === p.id;
                 return (
-                  <div key={p.id} style={{ background: PAL.cream, border: `1px solid ${PAL.line}`, borderRadius: 24, overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                    <div style={{ aspectRatio: "16 / 9", overflow: "hidden" }}>
-                      <img src={p.img} alt={p.t} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-                    </div>
-                    <div style={{ padding: isMobile ? "24px 20px" : "28px 32px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                    <div>
-                      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" as const }}>
-                        <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: p.color, background: p.color+"18", borderRadius: 999, padding: "3px 10px" }}>{p.dur}</span>
-                        <span style={{ width: 5, height: 5, borderRadius: 999, background: p.color }} />
-                        <span style={{ fontFamily: sans, fontSize: 12, color: PAL.muted }}>{t("fp.stages")} {p.hours}</span>
-                      </div>
-                      <h3 style={{ fontFamily: serif, fontWeight: 500, fontSize: isMobile ? 24 : 32, color: PAL.ink, margin: "16px 0 10px" }}>{p.t}</h3>
-                      <p style={{ fontFamily: sans, fontSize: 14, lineHeight: 1.6, color: PAL.text, margin: 0 }}>{p.d}</p>
-                      {isExpanded && (
-                        <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${PAL.line}` }}>
-                          <h4 style={{ fontFamily: serif, fontSize: 17, fontWeight: 600, color: PAL.ink, margin: "0 0 6px" }}>{t("fp.objectives")}</h4>
-                          <p style={{ fontFamily: sans, fontSize: 13, lineHeight: 1.55, color: PAL.muted, margin: "0 0 16px" }}>{p.obj}</p>
-                          <h4 style={{ fontFamily: serif, fontSize: 17, fontWeight: 600, color: PAL.ink, margin: "0 0 6px" }}>{t("fp.admission")}</h4>
-                          <p style={{ fontFamily: sans, fontSize: 13, lineHeight: 1.55, color: PAL.muted, margin: "0 0 16px" }}>{p.req}</p>
-                          <h4 style={{ fontFamily: serif, fontSize: 17, fontWeight: 600, color: PAL.ink, margin: "0 0 6px" }}>{t("fp.careers")}</h4>
-                          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column" as const, gap: 5 }}>
-                            {p.careers.map((c, i) => (
-                              <li key={i} style={{ display: "flex", gap: 8, fontFamily: sans, fontSize: 13, color: PAL.text }}>
-                                <span style={{ color: p.color, fontWeight: 700 }}>→</span>{c}
-                              </li>
-                            ))}
-                          </ul>
+                  <article key={p.id} className={`gcard rv rv-d${i}`}>
+                    <div className="gimg" data-view><img src={p.img} alt={p.t} loading="lazy" /></div>
+                    <div className="gbody">
+                      <div className="meta"><span className="tag">{p.dur}</span><span className="dot" />{t("fp.stages")} {p.hours}</div>
+                      <h3>{p.t}</h3>
+                      <p>{p.d}</p>
+                      <div className={`expand${isExpanded ? " open" : ""}`}>
+                        <div>
+                          <h4>{t("fp.objectives")}</h4><p>{p.obj}</p>
+                          <h4>{t("fp.admission")}</h4><p>{p.req}</p>
+                          <h4>{t("fp.careers")}</h4>
+                          <ul className="clist2">{p.careers.map((c, k) => <li key={k}>{c}</li>)}</ul>
                         </div>
-                      )}
+                      </div>
+                      <div className="gfoot">
+                        <button className="ulink" onClick={() => setExpandedId(isExpanded ? null : p.id)}>{isExpanded ? t("fp.collapse") : t("fp.details")}</button>
+                        <Link to="/contact" className="btn btn-p sm">{clean(t("fp.apply"))}<span className="arr"><Arrow /></span></Link>
+                      </div>
                     </div>
-                    <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" as const, gap: 10 }}>
-                      <button onClick={() => setExpandedId(isExpanded ? null : p.id)} style={{ background: "transparent", border: 0, padding: 0, cursor: "pointer", fontFamily: sans, fontSize: 13, fontWeight: 700, color: PAL.ink, borderBottom: `2.5px solid ${p.color}`, paddingBottom: 2 }}>
-                        {isExpanded ? t("fp.collapse") : t("fp.details")}
-                      </button>
-                      <a href="/contact" style={{ fontFamily: sans, fontSize: 12, fontWeight: 600, color: PAL.paper, background: PAL.ink, borderRadius: 99, padding: "8px 16px", textDecoration: "none" }}>{t("fp.apply")}</a>
-                    </div>
-                    </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
           ) : (
-            <div style={{ textAlign: "center" as const, padding: "60px 0" }}>
-              <span style={{ fontSize: 40 }}>🔍</span>
-              <h3 style={{ fontFamily: serif, fontSize: 22, color: PAL.ink, marginTop: 14 }}>{t("fp.empty.title")}</h3>
-              <p style={{ fontFamily: sans, fontSize: 14, color: PAL.muted, marginTop: 8 }}>{t("fp.empty.body")}</p>
+            <div className="empty">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+              <h3>{t("fp.empty.title")}</h3>
+              <p>{t("fp.empty.body")}</p>
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        <section style={{ padding: pad, background: PAL.cream, borderTop: `1px solid ${PAL.line}` }}>
-          <div style={{ maxWidth: 1040, margin: "0 auto", background: PAL.paper, border: `1px solid ${PAL.line}`, borderRadius: 28, padding: isMobile ? "40px 24px" : "72px 56px", position: "relative", overflow: "hidden", textAlign: "center" as const }}>
-            <div style={{ position: "absolute", right: -60, bottom: -60, opacity: .04, pointerEvents: "none" }}><Logo size={280} /></div>
-            <div style={{ position: "relative" }}>
-              <h2 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(30px, 4.5vw, 54px)", color: PAL.ink, margin: "0 0 14px", letterSpacing: "-.02em" }}>
-                {t("fp.cta.h2a")} <em style={{ fontStyle: "italic", color: PAL.primary }}>{t("fp.cta.h2b")}</em>
-              </h2>
-              <p style={{ fontFamily: sans, fontSize: isMobile ? 14 : 15, color: PAL.muted, maxWidth: 540, margin: "0 auto", lineHeight: 1.55 }}>{t("fp.cta.body")}</p>
-              <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 28, flexWrap: "wrap" as const }}>
-                <a href="/contact" style={{ background: PAL.ink, color: PAL.paper, fontFamily: sans, fontSize: 14, fontWeight: 600, padding: "14px 24px", borderRadius: 999, textDecoration: "none" }}>{t("fp.cta.contact")}</a>
-                <a href="tel:+212632822898" style={{ background: "transparent", color: PAL.ink, border: `1px solid ${PAL.line}`, fontFamily: sans, fontSize: 14, fontWeight: 500, padding: "13px 24px", borderRadius: 999, textDecoration: "none" }}>{t("fp.cta.call")}</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </PageLayout>
+      <NdCta h2a={t("fp.cta.h2a")} h2b={t("fp.cta.h2b")} body={t("fp.cta.body")}>
+        <Link to="/contact" className="btn btn-p magnet">{clean(t("fp.cta.contact"))}<span className="arr"><Arrow /></span></Link>
+        <a href="tel:+212632822898" className="btn btn-g magnet">{clean(t("fp.cta.call"))}<span className="arr"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" /></svg></span></a>
+      </NdCta>
+    </NdLayout>
   );
 }

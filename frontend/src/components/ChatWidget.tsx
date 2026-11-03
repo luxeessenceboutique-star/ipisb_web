@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useBreakpoint } from "@/lib/useBreakpoint";
+import { useI18n } from "@/lib/i18n";
 import { MessageCircle, X, Send, ChevronDown } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:9000";
@@ -379,7 +380,14 @@ function StageProgress({ stage }: { stage: Stage }) {
 }
 
 // ── Main widget ───────────────────────────────────────────────────────────────
+const FAB_LABEL: Record<string, string> = {
+  fr: "Besoin d'aide ? Demandez à Aya",
+  en: "Need help? Ask Aya",
+  ar: "تحتاج مساعدة؟ اسأل آية",
+};
+
 export function ChatWidget() {
+  const { lang: siteLang } = useI18n();
   const { isMobile } = useBreakpoint();
   const [open,      setOpen]      = useState(false);
   const [lang,      setLang]      = useState<Lang | null>(null);
@@ -787,7 +795,7 @@ export function ChatWidget() {
         {open
           ? <span style={{ width: 44, height: 44, borderRadius: 999, display: "grid", placeItems: "center", background: D.ink, color: "#fff" }}><X size={20} strokeWidth={2} /></span>
           : <AyaAvatar size={44} online />}
-        {!open && !isMobile && <span>Besoin d'aide ? Demandez à Aya</span>}
+        {!open && !isMobile && <span>{FAB_LABEL[siteLang] ?? FAB_LABEL.fr}</span>}
         {unread > 0 && !open && (
           <span aria-hidden="true" style={{
             position: "absolute", top: -4, right: -4,

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { ND } from "./texts";
 import "./nd.css";
+import { NdNav, NdFooter } from "./NdLayout";
 
 /* ───────── helpers ───────── */
 export const openAya = () => window.dispatchEvent(new CustomEvent("aya:open"));
@@ -56,7 +57,6 @@ export function NewHome() {
   const [loaderGo, setLoaderGo] = useState(false);
   const [pct, setPct] = useState(0);
   const [rotI, setRotI] = useState(0);
-  const [menu, setMenu] = useState(false);
   const [room, setRoom] = useState<number | null>(null);
   const [hsN, setHsN] = useState(1);
 
@@ -94,7 +94,7 @@ export function NewHome() {
     /* cursor + preview follow */
     const cur = $(".nd-cursor")!, pv = $(".nd-preview")!;
     let mx = innerWidth / 2, my = innerHeight / 2, cx = mx, cy = my, tx = mx, ty = my;
-    on(window, "mousemove", e => { mx = e.clientX; my = e.clientY; });
+    on(window, "mousemove", e => { mx = e.clientX; my = e.clientY; cur.classList.add("live"); });
     on(document as unknown as HTMLElement, "mouseover", (e: MouseEvent) => {
       const tgt = e.target as HTMLElement;
       const v = tgt.closest?.("[data-view]"), l = tgt.closest?.("a,button,[data-link]");
@@ -116,7 +116,7 @@ export function NewHome() {
     const onScroll = () => {
       const y = scrollY, h = document.documentElement.scrollHeight - innerHeight;
       nav.classList.toggle("scrolled", y > 40);
-      nav.classList.toggle("hide", y > lastY && y > 600 && !el.querySelector(".mobile-menu.open")); lastY = y;
+      nav.classList.toggle("hide", y > lastY && y > 600 && !document.querySelector(".nd .mobile-menu.open")); lastY = y;
       prog.style.transform = `scaleX(${h > 0 ? y / h : 0})`;
       const rtl = document.documentElement.dir === "rtl";
       if (innerWidth > 1060) {
@@ -235,7 +235,6 @@ export function NewHome() {
     return <Fragment key={i}>{tok.split(" ").map(w => <Fragment key={wi++}><span className="w">{w}</span>{" "}</Fragment>)}</Fragment>;
   });
 
-  const langIdx = LANGS.findIndex(l => l.code === lang);
   const mq = T.mq1.map((w, i) => <Fragment key={i}><span className={i % 2 ? "o" : ""}>{w}</span><Cross /></Fragment>);
   const mq2 = [0, 1, 2].map(i => <Fragment key={i}>{t(`prog.${i}.t`)} <Cross /> </Fragment>);
 
@@ -254,21 +253,7 @@ export function NewHome() {
       <div className="nd-cursor"><span>{T.view}</span></div>
       <div className={`nd-preview${room !== null ? " show" : ""}`}>{ROOM_IMG.map((s, i) => <img key={s} src={s} alt="" className={room === i ? "on" : ""} />)}</div>
 
-      {/* NAV */}
-      <nav className="nav">
-        <Link to="/" className="brand"><img src="/ipisb-logo.png" alt="" /><div>IPISB<small>CONNECT</small></div></Link>
-        <div className="links">{NAV.map(n => <Link key={n.to} to={n.to}>{t(n.k)}</Link>)}</div>
-        <div className="nav-r">
-          <div className="lang"><span className="pill" style={{ transform: `translateX(${langIdx * 100}%)` }} />
-            {LANGS.map(l => <button key={l.code} className={lang === l.code ? "on" : ""} onClick={() => setLang(l.code)}>{l.label}</button>)}
-          </div>
-          <Link to="/contact" className="btn btn-p">{t("nav.signup")}<span className="arr"><Arrow /></span></Link>
-          <button className="burger" aria-label="Menu" onClick={() => setMenu(m => !m)}>
-            <span style={{ transform: menu ? "translateY(3px) rotate(45deg)" : "" }} /><span style={{ transform: menu ? "translateY(-3px) rotate(-45deg)" : "" }} />
-          </button>
-        </div>
-      </nav>
-      <div className={`mobile-menu${menu ? " open" : ""}`}>{NAV.map(n => <Link key={n.to} to={n.to} onClick={() => setMenu(false)}>{t(n.k)}</Link>)}</div>
+      <NdNav />
 
       {/* HERO */}
       <header className="hero">
@@ -486,19 +471,7 @@ export function NewHome() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer>
-        <div className="wrap">
-          <div className="foot">
-            <div><img className="logo-full" src="/ipisb-logo-full.png" alt="IPISB" /><p style={{ color: "var(--mute)", fontSize: 14.5, maxWidth: 300 }}>{T.footDesc}</p></div>
-            <div><h5>{T.nav}</h5>{NAV.map(n => <Link key={n.to} to={n.to}>{t(n.k)}</Link>)}</div>
-            <div><h5>{t("footer.col2")}</h5>{[0, 1, 2].map(i => <Link key={i} to="/formations">{t(`prog.${i}.t`)}</Link>)}</div>
-            <div><h5>{T.contact}</h5><ul><li>El Jadida, Maroc</li><li dir="ltr" style={{ textAlign: "start" }}>+212 632-822898</li><li>contact@ipisb.ma</li><li>{T.hours}</li></ul></div>
-          </div>
-          <div className="giant">{"IPISB".split("").map((c, i) => <span key={i}>{c}</span>)}</div>
-          <div className="foot-b"><span>© {new Date().getFullYear()} IPISB Connect — {t("footer.copy")}</span><span>{T.madeBy}</span></div>
-        </div>
-      </footer>
+      <NdFooter />
     </div>
   );
 }
